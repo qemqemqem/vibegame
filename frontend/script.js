@@ -159,7 +159,18 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         }
 
         const data = await response.json();
-        const assistantMessage = data.content[0].text;
+        
+        // Handle different response formats
+        let assistantMessage;
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            // Netlify function format (OpenAI-like)
+            assistantMessage = data.choices[0].message.content;
+        } else if (data.content && data.content[0] && data.content[0].text) {
+            // Direct Anthropic API format
+            assistantMessage = data.content[0].text;
+        } else {
+            throw new Error('Unexpected response format from API');
+        }
         
         // Add assistant response to conversation history
         this.conversationHistory.push({
