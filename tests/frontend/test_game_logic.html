@@ -131,6 +131,12 @@
                 if (type !== 'player' && type !== 'dm') {
                     throw new Error('Invalid message type');
                 }
+                
+                // Play sound for DM messages
+                if (type === 'dm' && this.playResponseSound) {
+                    this.playResponseSound();
+                }
+                
                 return { content, type };
             }
 
@@ -216,6 +222,33 @@
                 runner.assertEqual(game.validateInput('   '), false);
                 runner.assertEqual(game.validateInput(null), false);
                 runner.assertEqual(game.validateInput(undefined), false);
+            });
+
+            // Test sound functionality
+            runner.test('Sound plays when DM message is added', function() {
+                const game = new MockVibeGame();
+                let soundPlayed = false;
+                
+                // Mock audio playback
+                game.playResponseSound = function() {
+                    soundPlayed = true;
+                };
+                
+                game.addMessage('Welcome adventurer!', 'dm');
+                runner.assertTrue(soundPlayed, 'Sound should play when DM message is added');
+            });
+
+            runner.test('Sound does not play when player message is added', function() {
+                const game = new MockVibeGame();
+                let soundPlayed = false;
+                
+                // Mock audio playback
+                game.playResponseSound = function() {
+                    soundPlayed = true;
+                };
+                
+                game.addMessage('I attack the dragon', 'player');
+                runner.assertEqual(soundPlayed, false, 'Sound should not play when player message is added');
             });
 
             runner.summary();

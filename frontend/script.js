@@ -7,6 +7,7 @@ class VibeGame {
         
         this.setupEventListeners();
         this.setupDungeonMasterPrompt();
+        this.setupSoundEffects();
     }
     
     setupEventListeners() {
@@ -38,6 +39,34 @@ Guidelines:
 - Never break character or mention you're an AI
 
 The player has just entered your dungeon. Guide them on an epic adventure!`;
+    }
+    
+    setupSoundEffects() {
+        // Pre-load the sound file for better performance
+        this.responseSound = new Audio('sounds/im_recv.wav');
+        this.responseSound.volume = 0.5; // Set volume to 50%
+        
+        // Preload the audio to avoid delays
+        this.responseSound.preload = 'auto';
+        
+        // Handle audio loading errors gracefully
+        this.responseSound.onerror = () => {
+            console.log('Could not load response sound, continuing without audio');
+        };
+    }
+    
+    playResponseSound() {
+        if (this.responseSound) {
+            try {
+                // Reset the audio to the beginning for rapid successive sounds
+                this.responseSound.currentTime = 0;
+                this.responseSound.play().catch(error => {
+                    console.log('Could not play response sound:', error);
+                });
+            } catch (error) {
+                console.log('Error playing response sound:', error);
+            }
+        }
     }
     
     async sendMessage() {
@@ -115,6 +144,11 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         this.chatContainer.appendChild(messageDiv);
         
         this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+        
+        // Play sound for DM messages
+        if (type === 'dm') {
+            this.playResponseSound();
+        }
     }
     
     showLoading(show) {
