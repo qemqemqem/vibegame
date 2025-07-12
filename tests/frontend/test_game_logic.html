@@ -122,6 +122,8 @@
                 this.playerInput = { value: '', disabled: false };
                 this.sendButton = { disabled: false };
                 this.loading = { style: { display: 'none' } };
+                this.streamingMessages = new Map();
+                this.nextMessageId = 1;
             }
 
             addMessage(content, type) {
@@ -142,6 +144,40 @@
 
             validateInput(input) {
                 return input && typeof input === 'string' && input.trim().length > 0;
+            }
+
+            // Streaming functionality (will be implemented in real game)
+            addStreamingMessage(type) {
+                if (type !== 'player' && type !== 'dm') {
+                    throw new Error('Invalid message type');
+                }
+                const id = `msg_${this.nextMessageId++}`;
+                const message = {
+                    id: id,
+                    type: type,
+                    content: '',
+                    isStreaming: true
+                };
+                this.streamingMessages.set(id, message);
+                return message;
+            }
+
+            updateStreamingMessage(id, newContent) {
+                const message = this.streamingMessages.get(id);
+                if (!message) {
+                    throw new Error('Streaming message not found');
+                }
+                message.content += newContent;
+                return message;
+            }
+
+            finishStreamingMessage(id) {
+                const message = this.streamingMessages.get(id);
+                if (!message) {
+                    throw new Error('Streaming message not found');
+                }
+                message.isStreaming = false;
+                return message;
             }
         }
 
@@ -216,6 +252,62 @@
                 runner.assertEqual(game.validateInput('   '), false);
                 runner.assertEqual(game.validateInput(null), false);
                 runner.assertEqual(game.validateInput(undefined), false);
+            });
+
+            // Test streaming functionality (will fail initially - TDD approach)
+            runner.log('🌊 Testing Streaming Functionality...', 'test-header');
+            
+            runner.test('Game has streaming capabilities', function() {
+                const game = new MockVibeGame();
+                runner.assertTrue(typeof game.addStreamingMessage === 'function', 'addStreamingMessage method should exist');
+                runner.assertTrue(typeof game.updateStreamingMessage === 'function', 'updateStreamingMessage method should exist');
+                runner.assertTrue(typeof game.finishStreamingMessage === 'function', 'finishStreamingMessage method should exist');
+            });
+
+            runner.test('Streaming message starts with placeholder', function() {
+                const game = new MockVibeGame();
+                const streamingMessage = game.addStreamingMessage('dm');
+                runner.assertEqual(streamingMessage.type, 'dm');
+                runner.assertEqual(streamingMessage.isStreaming, true);
+                runner.assertTrue(streamingMessage.content.length === 0 || streamingMessage.content === '...');
+            });
+
+            runner.test('Streaming message updates incrementally', function() {
+                const game = new MockVibeGame();
+                const streamingMessage = game.addStreamingMessage('dm');
+                
+                game.updateStreamingMessage(streamingMessage.id, 'Hello');
+                runner.assertEqual(streamingMessage.content, 'Hello');
+                
+                game.updateStreamingMessage(streamingMessage.id, ' world');
+                runner.assertEqual(streamingMessage.content, 'Hello world');
+                
+                game.updateStreamingMessage(streamingMessage.id, '!');
+                runner.assertEqual(streamingMessage.content, 'Hello world!');
+            });
+
+            runner.test('Streaming message can be finished', function() {
+                const game = new MockVibeGame();
+                const streamingMessage = game.addStreamingMessage('dm');
+                
+                game.updateStreamingMessage(streamingMessage.id, 'Complete message');
+                game.finishStreamingMessage(streamingMessage.id);
+                
+                runner.assertEqual(streamingMessage.isStreaming, false);
+                runner.assertEqual(streamingMessage.content, 'Complete message');
+            });
+
+            runner.test('Multiple streaming messages can be managed', function() {
+                const game = new MockVibeGame();
+                const message1 = game.addStreamingMessage('dm');
+                const message2 = game.addStreamingMessage('dm');
+                
+                game.updateStreamingMessage(message1.id, 'First message');
+                game.updateStreamingMessage(message2.id, 'Second message');
+                
+                runner.assertEqual(message1.content, 'First message');
+                runner.assertEqual(message2.content, 'Second message');
+                runner.assertTrue(message1.id !== message2.id);
             });
 
             runner.summary();

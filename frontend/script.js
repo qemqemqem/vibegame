@@ -7,16 +7,18 @@ class VibeGame {
         this.apiKeySettingsBtn = document.getElementById('apiKeySettingsBtn');
         
         this.conversationHistory = [];
+        this.streamingMessages = new Map();
+        this.nextMessageId = 1;
         this.setupEventListeners();
         this.setupDungeonMasterPrompt();
         this.showApiKeyStatus();
     }
     
     setupEventListeners() {
-        this.sendButton.addEventListener('click', () => this.sendMessage());
+        this.sendButton.addEventListener('click', () => this.sendMessageWithStreaming());
         this.playerInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') {
-                this.sendMessage();
+                this.sendMessageWithStreaming();
             }
         });
         this.apiKeySettingsBtn.addEventListener('click', () => {
@@ -240,6 +242,231 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         if (!show) {
             this.playerInput.focus();
         }
+    }
+
+    // Streaming functionality
+    addStreamingMessage(type) {
+        if (type !== 'player' && type !== 'dm') {
+            throw new Error('Invalid message type');
+        }
+        
+        const id = `msg_${this.nextMessageId++}`;
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type === 'player' ? 'player-message' : 'dm-message'}`;
+        messageDiv.id = id;
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        contentDiv.textContent = '';
+        
+        // Add cursor for streaming indication
+        const cursor = document.createElement('span');
+        cursor.className = 'streaming-cursor';
+        cursor.textContent = '▋';
+        cursor.style.animation = 'blink 1s infinite';
+        
+        messageDiv.appendChild(contentDiv);
+        messageDiv.appendChild(cursor);
+        this.chatContainer.appendChild(messageDiv);
+        
+        this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+        
+        const message = {
+            id: id,
+            type: type,
+            content: '',
+            isStreaming: true,
+            element: messageDiv,
+            contentElement: contentDiv,
+            cursorElement: cursor
+        };
+        
+        this.streamingMessages.set(id, message);
+        return message;
+    }
+
+    updateStreamingMessage(id, newContent) {
+        const message = this.streamingMessages.get(id);
+        if (!message) {
+            throw new Error('Streaming message not found');
+        }
+        
+        message.content += newContent;
+        message.contentElement.textContent = message.content;
+        
+        // Auto-scroll to bottom
+        this.chatContainer.scrollTop = this.chatContainer.scrollHeight;
+        
+        return message;
+    }
+
+    finishStreamingMessage(id) {
+        const message = this.streamingMessages.get(id);
+        if (!message) {
+            throw new Error('Streaming message not found');
+        }
+        
+        message.isStreaming = false;
+        // Remove cursor
+        if (message.cursorElement) {
+            message.cursorElement.remove();
+        }
+        
+        return message;
+    }
+
+    // Enhanced sendMessage for streaming
+    async sendMessageWithStreaming() {
+        const message = this.playerInput.value.trim();
+        if (!message) return;
+        
+        this.addMessage(message, 'player');
+        this.playerInput.value = '';
+        this.showLoading(true);
+        
+        try {
+            const response = await this.callLLMWithStreaming(message);
+            // Response handling is done in the streaming callback
+        } catch (error) {
+            console.error('Error calling LLM:', error);
+            let errorMessage = '*The mystical connection to the Dungeon Master has been disrupted. ';
+            
+            if (error.message.includes('Invalid API key')) {
+                errorMessage += 'Your API key seems to be invalid. Please check your settings.*';
+            } else if (error.message.includes('401')) {
+                errorMessage += 'Authentication failed. Please verify your API key.*';
+            } else {
+                errorMessage += 'Please try again in a moment.*';
+            }
+            
+            this.addMessage(errorMessage, 'dm');
+        } finally {
+            this.showLoading(false);
+        }
+    }
+
+    async callLLMWithStreaming(userMessage) {
+        // Add user message to conversation history
+        this.conversationHistory.push({
+            role: 'user',
+            content: userMessage
+        });
+
+        // Try to get API key
+        const apiKey = await window.apiKeyManager.getApiKey();
+        
+        if (apiKey) {
+            try {
+                return await this.callStreamingAPI(apiKey);
+            } catch (error) {
+                console.error('Streaming API Error:', error);
+                // Fall back to regular response
+                const fallbackResponse = this.getMockResponse(userMessage);
+                this.addMessage(fallbackResponse, 'dm');
+                return fallbackResponse;
+            }
+        } else {
+            // Use mock response with streaming effect
+            const fallbackResponse = this.getMockResponse(userMessage);
+            await this.simulateStreamingResponse(fallbackResponse);
+            return fallbackResponse;
+        }
+    }
+
+    async callStreamingAPI(apiKey) {
+        const isNetlify = window.location.hostname.includes('netlify.app');
+        
+        if (isNetlify) {
+            // Use Netlify function with streaming
+            const response = await fetch('/.netlify/functions/chat-stream', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    messages: this.conversationHistory,
+                    apiKey: apiKey,
+                    stream: true
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error(`API Error: ${response.status}`);
+            }
+
+            return await this.processStreamingResponse(response);
+        } else {
+            // Fallback to regular API call for non-Netlify environments
+            return await this.callAnthropicAPI(apiKey);
+        }
+    }
+
+    async processStreamingResponse(response) {
+        const streamingMessage = this.addStreamingMessage('dm');
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') {
+                            this.finishStreamingMessage(streamingMessage.id);
+                            break;
+                        }
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (parsed.content) {
+                                assistantMessage += parsed.content;
+                                this.updateStreamingMessage(streamingMessage.id, parsed.content);
+                            }
+                        } catch (e) {
+                            // Skip invalid JSON
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Streaming error:', error);
+            this.finishStreamingMessage(streamingMessage.id);
+        }
+
+        // Add to conversation history
+        this.conversationHistory.push({
+            role: 'assistant',
+            content: assistantMessage
+        });
+
+        // Keep conversation history manageable
+        if (this.conversationHistory.length > 20) {
+            this.conversationHistory = this.conversationHistory.slice(-20);
+        }
+
+        return assistantMessage;
+    }
+
+    async simulateStreamingResponse(fullResponse) {
+        const streamingMessage = this.addStreamingMessage('dm');
+        const words = fullResponse.split(' ');
+        
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i] + (i < words.length - 1 ? ' ' : '');
+            this.updateStreamingMessage(streamingMessage.id, word);
+            
+            // Add delay to simulate streaming
+            await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+        }
+        
+        this.finishStreamingMessage(streamingMessage.id);
     }
 }
 
