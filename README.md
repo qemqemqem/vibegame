@@ -6,6 +6,7 @@ A modern browser-based dungeon master game powered by AI. Chat with an intellige
 
 - **Mobile-First Design**: Optimized for vibecoding on any device
 - **AI-Powered Storytelling**: Dynamic responses using LiteLLM integration
+- **DALL-E 3 Image Generation**: Visual scenes for every adventure response
 - **Comprehensive Testing**: Full test suite for reliable development
 - **Zero Setup**: Works in browser with fallback responses
 - **Clean Architecture**: Organized structure for easy feature additions
@@ -81,6 +82,7 @@ open tests/frontend/test_game_logic.html  # Frontend tests
 
 ### Current Gameplay
 - **Chat Interface**: Type actions, get AI responses
+- **Visual Adventures**: DALL-E 3 generates images for every scene
 - **Context Awareness**: DM remembers your journey
 - **Mobile Optimized**: Perfect for vibecoding anywhere
 - **Fallback Responses**: Works even without API access
@@ -123,6 +125,18 @@ cp .env.example .env
 # Edit .env and add your key
 ```
 
+### OpenAI API Key Setup (for DALL-E Images)
+```bash
+# Get your API key from https://platform.openai.com/
+export OPENAI_API_KEY="sk-your-openai-key-here"
+
+# For Netlify deployment
+netlify env:set OPENAI_API_KEY your-key-here
+
+# Add to .env for local development
+echo "OPENAI_API_KEY=sk-your-openai-key-here" >> .env
+```
+
 ### Model Configuration
 ```javascript
 // Uses Claude 3.5 Haiku by default (fastest & cheapest)
@@ -133,6 +147,8 @@ model: 'claude-3-5-haiku-20241022'
 ```
 
 **📖 See [API_KEY_SETUP.md](docs/API_KEY_SETUP.md) for detailed setup instructions!**
+
+**🎨 See [DALLE_INTEGRATION.md](docs/DALLE_INTEGRATION.md) for image generation setup and usage!**
 
 ## 📋 Development Roadmap
 

@@ -7,6 +7,7 @@ Supports both real LLM calls and mocking for testing
 import os
 import json
 import asyncio
+import re
 from typing import Dict, List, Any, Optional
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
@@ -19,6 +20,137 @@ try:
 except ImportError:
     HAS_LITELLM = False
     print("Warning: litellm not installed. Install with: pip install litellm")
+
+try:
+    import openai
+    HAS_OPENAI = True
+except ImportError:
+    HAS_OPENAI = False
+    print("Warning: openai not installed. Install with: pip install openai")
+
+
+class DalleImageGenerator:
+    """Handles DALL-E 3 image generation for game scenarios"""
+    
+    def __init__(self, mock_mode: bool = False):
+        self.mock_mode = mock_mode
+        self.openai_api_key = os.getenv('OPENAI_API_KEY')
+        
+        if not self.mock_mode and self.openai_api_key:
+            try:
+                self.client = openai.OpenAI(api_key=self.openai_api_key)
+            except Exception as e:
+                print(f"Warning: Could not initialize OpenAI client: {e}")
+                self.client = None
+        else:
+            self.client = None
+    
+    def extract_visual_elements(self, text: str) -> List[str]:
+        """Extract visual elements from game text for image generation"""
+        # Common fantasy/RPG visual elements
+        visual_keywords = [
+            r'dark forest|mystical forest|enchanted forest|forest',
+            r'dragon|dragons',
+            r'castle|fortress|tower',
+            r'dungeon|cave|cavern',
+            r'ancient ruins|ruins|temple',
+            r'magical sword|sword|weapon',
+            r'glowing|magical glow|mystical light',
+            r'stone walls|stone pillars|pillars',
+            r'torch|torchlight|firelight',
+            r'runes|mysterious symbols|carvings',
+            r'starry sky|night sky|stars',
+            r'crystal|crystalline|gems',
+            r'portal|magical portal',
+            r'wizard|sage|mage',
+            r'creature|monster|beast',
+            r'treasure|gold|jewels',
+            r'mountain|cliff|valley',
+            r'river|stream|waterfall',
+            r'bridge|path|trail'
+        ]
+        
+        elements = []
+        text_lower = text.lower()
+        
+        for pattern in visual_keywords:
+            matches = re.findall(pattern, text_lower)
+            elements.extend(matches)
+        
+        # Remove duplicates and return unique elements
+        return list(set(elements))
+    
+    def build_dalle_prompt(self, game_text: str, user_action: str = "") -> str:
+        """Build a DALL-E prompt from game context"""
+        visual_elements = self.extract_visual_elements(game_text + " " + user_action)
+        
+        # Base prompt structure
+        prompt = "Fantasy RPG scene: "
+        
+        if visual_elements:
+            # Use the most relevant visual elements
+            main_elements = visual_elements[:3]  # Limit to avoid overly complex prompts
+            prompt += ", ".join(main_elements)
+        else:
+            # Fallback to general adventure scene
+            prompt += "an epic fantasy adventure scene"
+        
+        # Add style specifications
+        prompt += ", digital art style, detailed illustration, cinematic lighting, high quality"
+        
+        return prompt
+    
+    def generate_mock_image(self, prompt: str) -> Dict[str, Any]:
+        """Generate a mock image response for testing"""
+        # Create a descriptive placeholder based on the prompt
+        # Extract key words for the placeholder text
+        words = prompt.replace(",", " ").split()
+        key_words = [w for w in words if w.lower() in ['forest', 'dragon', 'castle', 'dungeon', 'magic', 'sword', 'adventure']]
+        
+        if key_words:
+            placeholder_text = "+".join(key_words[:2])
+        else:
+            placeholder_text = "Fantasy+Adventure"
+        
+        mock_url = f"https://via.placeholder.com/1024x1024/4A5568/FFFFFF?text={placeholder_text}"
+        
+        return {
+            "url": mock_url,
+            "prompt": prompt,
+            "revised_prompt": prompt  # In mock mode, we don't revise the prompt
+        }
+    
+    def generate_image(self, game_text: str, user_action: str = "") -> Optional[Dict[str, Any]]:
+        """Generate an image based on game context"""
+        try:
+            prompt = self.build_dalle_prompt(game_text, user_action)
+            
+            if self.mock_mode or not self.client:
+                return self.generate_mock_image(prompt)
+            
+            # Real DALL-E API call
+            response = self.client.images.generate(
+                model="dall-e-3",
+                prompt=prompt,
+                size="1024x1024",
+                quality="standard",
+                n=1
+            )
+            
+            if response.data:
+                image_data = response.data[0]
+                return {
+                    "url": image_data.url,
+                    "prompt": prompt,
+                    "revised_prompt": image_data.revised_prompt
+                }
+            
+            return None
+            
+        except Exception as e:
+            print(f"Image generation error: {e}")
+            # Fallback to mock image if real API fails
+            return self.generate_mock_image(self.build_dalle_prompt(game_text, user_action))
 
 
 class GameMockResponses:
@@ -69,6 +201,7 @@ class VibeGameHandler(BaseHTTPRequestHandler):
     
     def __init__(self, *args, mock_mode=False, **kwargs):
         self.mock_mode = mock_mode
+        self.image_generator = DalleImageGenerator(mock_mode=mock_mode)
         super().__init__(*args, **kwargs)
     
     def _set_cors_headers(self):
@@ -153,6 +286,10 @@ class VibeGameHandler(BaseHTTPRequestHandler):
             if self.mock_mode or not HAS_LITELLM:
                 # Use mock responses for testing
                 response_content = GameMockResponses.get_contextual_response(user_message)
+                
+                # Generate image based on the response
+                image_data = self.image_generator.generate_image(response_content, user_message)
+                
                 response = {
                     'choices': [{
                         'message': {
@@ -163,6 +300,10 @@ class VibeGameHandler(BaseHTTPRequestHandler):
                     'usage': {'total_tokens': 50},  # Mock usage
                     'model': 'mock-dm'
                 }
+                
+                # Add image data to response
+                if image_data:
+                    response['image'] = image_data
             else:
                 # Use real LiteLLM call
                 try:
@@ -177,10 +318,23 @@ class VibeGameHandler(BaseHTTPRequestHandler):
                         response = response.model_dump()
                     elif hasattr(response, 'dict'):
                         response = response.dict()
+                    
+                    # Generate image based on the LLM response
+                    if 'choices' in response and len(response['choices']) > 0:
+                        ai_response = response['choices'][0]['message']['content']
+                        image_data = self.image_generator.generate_image(ai_response, user_message)
+                        
+                        if image_data:
+                            response['image'] = image_data
+                    
                 except Exception as e:
                     print(f"LiteLLM error: {e}")
                     # Fallback to mock response
                     response_content = GameMockResponses.get_contextual_response(user_message)
+                    
+                    # Generate image for fallback response too
+                    image_data = self.image_generator.generate_image(response_content, user_message)
+                    
                     response = {
                         'choices': [{
                             'message': {
@@ -190,6 +344,9 @@ class VibeGameHandler(BaseHTTPRequestHandler):
                         }],
                         'error': str(e)
                     }
+                    
+                    if image_data:
+                        response['image'] = image_data
             
             self._serve_json(response)
             
