@@ -91,7 +91,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { messages, apiKey, stream } = JSON.parse(event.body);
+    const { messages, stream } = JSON.parse(event.body);
     
     if (!messages || !Array.isArray(messages)) {
       return {
@@ -101,11 +101,31 @@ exports.handler = async (event, context) => {
       };
     }
 
+    // Get API key from environment variable
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    
     if (!apiKey) {
+      console.log('No ANTHROPIC_API_KEY environment variable found');
+      // Return fallback streaming response
+      const fallbackResponse = getContextualFallback(messages.find(msg => msg.role === 'user')?.content || '');
+      const fallbackChunks = await simulateStreamingFallback(fallbackResponse);
+      const chunks = [];
+      
+      for (const chunk of fallbackChunks) {
+        chunks.push(`data: ${JSON.stringify(chunk)}\n\n`);
+      }
+      
+      chunks.push('data: [DONE]\n\n');
+      
       return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'API key required' }),
+        statusCode: 200,
+        headers: {
+          ...headers,
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+        body: chunks.join(''),
       };
     }
 

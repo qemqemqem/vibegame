@@ -315,10 +315,10 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         });
 
         try {
-            // Use Netlify function (API key handled server-side)
-            return await this.callNetlifyFunction();
+            // Use Netlify streaming function
+            return await this.callStreamingNetlifyFunction();
         } catch (error) {
-            console.error('Netlify Function Error:', error);
+            console.error('Netlify Streaming Function Error:', error);
             // Fall back to mock response with streaming effect
             const fallbackResponse = this.getMockResponse(userMessage);
             await this.simulateStreamingResponse(fallbackResponse);
@@ -326,7 +326,81 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         }
     }
 
+    async callStreamingNetlifyFunction() {
+        console.log('🚀 Starting streaming response from Claude AI...');
+        
+        const response = await fetch('/.netlify/functions/chat-stream', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messages: this.conversationHistory,
+                stream: true
+            })
+        });
 
+        if (!response.ok) {
+            throw new Error(`Streaming API Error: ${response.status} ${response.statusText}`);
+        }
+
+        // Process the streaming response
+        return await this.processStreamingResponse(response);
+    }
+
+    async processStreamingResponse(response) {
+        const streamingMessage = this.addStreamingMessage('dm');
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let assistantMessage = '';
+
+        try {
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const data = line.slice(6);
+                        if (data === '[DONE]') {
+                            this.finishStreamingMessage(streamingMessage.id);
+                            break;
+                        }
+                        
+                        try {
+                            const parsed = JSON.parse(data);
+                            if (parsed.content) {
+                                assistantMessage += parsed.content;
+                                this.updateStreamingMessage(streamingMessage.id, parsed.content);
+                            }
+                        } catch (e) {
+                            // Skip invalid JSON
+                        }
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Streaming processing error:', error);
+            this.finishStreamingMessage(streamingMessage.id);
+        }
+
+        // Add to conversation history
+        this.conversationHistory.push({
+            role: 'assistant',
+            content: assistantMessage
+        });
+
+        // Keep conversation history manageable
+        if (this.conversationHistory.length > 20) {
+            this.conversationHistory = this.conversationHistory.slice(-20);
+        }
+
+        console.log('✅ Streaming response complete!');
+        return null; // Response already displayed via streaming
+    }
 
     async simulateStreamingResponse(fullResponse) {
         const streamingMessage = this.addStreamingMessage('dm');
