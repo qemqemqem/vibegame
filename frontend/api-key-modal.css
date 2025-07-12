@@ -1,0 +1,336 @@
+/* API Key Modal Styles */
+.api-key-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+    animation: fadeIn 0.3s ease-out;
+}
+
+.api-key-modal {
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    border-radius: 20px;
+    padding: 0;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    color: white;
+    animation: slideIn 0.3s ease-out;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    border-radius: 20px 20px 0 0;
+    text-align: center;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-header h2 {
+    margin: 0 0 10px 0;
+    font-size: 1.8rem;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.modal-content {
+    padding: 25px;
+}
+
+.api-key-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 25px;
+    backdrop-filter: blur(10px);
+}
+
+.api-key-info h3 {
+    margin: 0 0 15px 0;
+    color: #ffd700;
+    font-size: 1.2rem;
+}
+
+.api-key-info ol {
+    margin: 0 0 15px 20px;
+    padding: 0;
+}
+
+.api-key-info li {
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
+.api-key-info a {
+    color: #87ceeb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.api-key-info a:hover {
+    text-decoration: underline;
+}
+
+.cost-info {
+    background: rgba(0, 255, 0, 0.1);
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.api-key-input-section {
+    margin: 20px 0;
+}
+
+.api-key-input-section label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #ffd700;
+}
+
+.api-key-input {
+    width: 100%;
+    padding: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.api-key-input:focus {
+    outline: none;
+    border-color: #87ceeb;
+    background: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(135, 206, 235, 0.3);
+}
+
+.api-key-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.input-hint {
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-top: 8px;
+    font-style: italic;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 25px;
+}
+
+.modal-actions button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    min-width: 120px;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.btn-primary:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-tertiary {
+    background: transparent;
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.btn-tertiary:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.4);
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 107, 107, 0.6);
+}
+
+.validation-status {
+    margin-top: 15px;
+    padding: 12px;
+    border-radius: 10px;
+    text-align: center;
+    font-weight: bold;
+    animation: slideDown 0.3s ease-out;
+}
+
+.validation-status.success {
+    background: rgba(0, 255, 0, 0.2);
+    border: 1px solid rgba(0, 255, 0, 0.4);
+    color: #90ee90;
+}
+
+.validation-status.error {
+    background: rgba(255, 0, 0, 0.2);
+    border: 1px solid rgba(255, 0, 0, 0.4);
+    color: #ffcccb;
+}
+
+.validation-status.warning {
+    background: rgba(255, 165, 0, 0.2);
+    border: 1px solid rgba(255, 165, 0, 0.4);
+    color: #ffd700;
+}
+
+.validation-status.info {
+    background: rgba(135, 206, 235, 0.2);
+    border: 1px solid rgba(135, 206, 235, 0.4);
+    color: #87ceeb;
+}
+
+.current-status {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+    line-height: 1.6;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideIn {
+    from { 
+        opacity: 0; 
+        transform: translateY(-30px) scale(0.9); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1); 
+    }
+}
+
+@keyframes slideDown {
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .api-key-modal {
+        width: 95%;
+        margin: 10px;
+    }
+    
+    .modal-header, .modal-content {
+        padding: 20px;
+    }
+    
+    .modal-header h2 {
+        font-size: 1.5rem;
+    }
+    
+    .modal-actions {
+        flex-direction: column;
+    }
+    
+    .modal-actions button {
+        width: 100%;
+    }
+    
+    .api-key-info ol {
+        margin-left: 15px;
+    }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+    .api-key-modal {
+        border: 3px solid white;
+    }
+    
+    .api-key-input {
+        border: 2px solid white;
+    }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+    .api-key-modal-overlay,
+    .api-key-modal,
+    .validation-status {
+        animation: none;
+    }
+    
+    .modal-actions button {
+        transition: none;
+    }
+    
+    .btn-primary:hover:not(:disabled),
+    .btn-secondary:hover,
+    .btn-danger:hover {
+        transform: none;
+    }
+}
