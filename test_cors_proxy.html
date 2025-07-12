@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS Proxy Test</title>
+</head>
+<body>
+    <h1>🔍 CORS Proxy Test</h1>
+    <button id="testBtn">Test CORS Proxy</button>
+    <div id="results"></div>
+
+    <script>
+        document.getElementById('testBtn').addEventListener('click', async () => {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>🔄 Testing CORS proxy...</p>';
+            
+            try {
+                // Test basic proxy connectivity
+                console.log('🔍 Testing CORS proxy connectivity...');
+                
+                const response = await fetch('https://corsproxy.io/?https://httpbin.org/get', {
+                    method: 'GET'
+                });
+                
+                console.log('📡 Proxy Response Status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ Proxy test successful:', data);
+                    resultsDiv.innerHTML = `
+                        <p>✅ CORS Proxy is working!</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Response: ${JSON.stringify(data, null, 2)}</p>
+                    `;
+                } else {
+                    console.error('❌ Proxy test failed:', response.status);
+                    resultsDiv.innerHTML = `
+                        <p>❌ CORS Proxy failed</p>
+                        <p>Status: ${response.status}</p>
+                        <p>Status Text: ${response.statusText}</p>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('❌ CORS Proxy error:', error);
+                resultsDiv.innerHTML = `
+                    <p>❌ CORS Proxy Error</p>
+                    <p>Error: ${error.message}</p>
+                    <p>Type: ${error.name}</p>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
