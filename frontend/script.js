@@ -62,26 +62,24 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     async callLLM(userMessage) {
         const messages = [
             {
-                role: 'system',
-                content: this.systemPrompt
-            },
-            {
                 role: 'user',
                 content: userMessage
             }
         ];
         
         try {
-            const response = await fetch('/api/chat', {
+            // Try Netlify function first (for deployed site)
+            const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? '/api/chat'  // Local development
+                : '/.netlify/functions/chat';  // Deployed site
+            
+            const response = await fetch(apiUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    messages: messages,
-                    model: 'gpt-3.5-turbo',
-                    max_tokens: 200,
-                    temperature: 0.8
+                    messages: messages
                 })
             });
             

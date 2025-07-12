@@ -22,7 +22,8 @@ python backend/server.py --mock
 Then open http://localhost:8000
 
 ### Live Demo
-🌐 **[Play Now](https://qemqemqem.github.io/vibegame/)** (GitHub Pages)
+🌐 **[Play Now](https://qemqemqem.github.io/vibegame/)** (GitHub Pages - Mock responses)
+🤖 **[Play with Claude](https://vibegame.netlify.app/)** (Netlify - Real AI with Claude 3.5 Haiku)
 
 ## 🏗️ Development
 
@@ -85,8 +86,9 @@ open tests/frontend/test_game_logic.html  # Frontend tests
 - **Fallback Responses**: Works even without API access
 
 ### AI Integration
-- **LiteLLM Support**: Easy switching between AI providers
-- **Mock Mode**: Comprehensive fallback responses for testing
+- **Claude 3.5 Haiku**: Anthropic's fastest & cheapest model ($0.80/$4 per million tokens)
+- **Serverless Functions**: Secure API key handling via Netlify functions
+- **Smart Fallbacks**: Comprehensive mock responses when API is unavailable
 - **Contextual Responses**: Different responses for combat, exploration, social interactions
 
 ## 🚀 Deployment
@@ -108,20 +110,29 @@ cp -r frontend/* /your/web/server/
 
 ## 🛠️ Configuration
 
-### Environment Variables
+### API Key Setup (for Claude Integration)
 ```bash
-# For real LLM integration
-export OPENAI_API_KEY="your-key-here"
-export ANTHROPIC_API_KEY="your-key-here"
+# Get your API key from https://console.anthropic.com/
+export ANTHROPIC_API_KEY="sk-ant-api-your-key-here"
+
+# For Netlify deployment
+netlify env:set ANTHROPIC_API_KEY your-key-here
+
+# Local development
+cp .env.example .env
+# Edit .env and add your key
 ```
 
-### LiteLLM Setup
-```python
-# backend/server.py supports multiple providers
-model = "gpt-3.5-turbo"      # OpenAI
-model = "claude-3-sonnet"    # Anthropic  
-model = "gemini-pro"         # Google
+### Model Configuration
+```javascript
+// Uses Claude 3.5 Haiku by default (fastest & cheapest)
+model: 'claude-3-5-haiku-20241022'
+
+// Pricing: $0.80 input + $4.00 output per million tokens
+// Typical response: ~200 tokens ≈ $0.0008 per message
 ```
+
+**📖 See [API_KEY_SETUP.md](docs/API_KEY_SETUP.md) for detailed setup instructions!**
 
 ## 📋 Development Roadmap
 

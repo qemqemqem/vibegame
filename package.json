@@ -1,0 +1,23 @@
+{
+  "name": "vibegame",
+  "version": "1.0.0",
+  "description": "A browser-based AI dungeon master game powered by Claude 3.5 Haiku",
+  "main": "frontend/index.html",
+  "scripts": {
+    "dev": "cd frontend && python3 -m http.server 8000",
+    "dev:backend": "cd backend && python server.py --mock",
+    "dev:full": "cd backend && python server.py",
+    "test": "python run_tests.py",
+    "test:frontend": "echo 'Frontend tests: open tests/frontend/test_game_logic.html'",
+    "test:backend": "python -m pytest tests/backend/",
+    "lint": "echo 'Linting not yet implemented'",
+    "build": "echo 'No build step needed for static site'",
+    "deploy": "echo 'Deploy to GitHub Pages'"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.27.0"
+  },
+  "keywords": ["game", "ai", "dungeon-master", "browser", "claude", "anthropic"],
+  "author": "",
+  "license": "MIT"
+}
