@@ -4,14 +4,13 @@ class VibeGame {
         this.playerInput = document.getElementById('playerInput');
         this.sendButton = document.getElementById('sendButton');
         this.loading = document.getElementById('loading');
-        this.apiKeySettingsBtn = document.getElementById('apiKeySettingsBtn');
         
         this.conversationHistory = [];
         this.streamingMessages = new Map();
         this.nextMessageId = 1;
         this.setupEventListeners();
         this.setupDungeonMasterPrompt();
-        this.showApiKeyStatus();
+        this.showWelcomeMessage();
     }
     
     setupEventListeners() {
@@ -20,9 +19,6 @@ class VibeGame {
             if (e.key === 'Enter') {
                 this.sendMessageWithStreaming();
             }
-        });
-        this.apiKeySettingsBtn.addEventListener('click', () => {
-            window.apiKeyManager.showApiKeySettings();
         });
     }
     
@@ -48,15 +44,9 @@ Guidelines:
 The player has just entered your dungeon. Guide them on an epic adventure!`;
     }
     
-    showApiKeyStatus() {
-        const hasApiKey = !!window.apiKeyManager.getStoredApiKey();
-        if (hasApiKey) {
-            this.apiKeySettingsBtn.style.background = 'rgba(0, 255, 0, 0.3)';
-            this.apiKeySettingsBtn.title = 'API Key Configured ✅';
-        } else {
-            this.apiKeySettingsBtn.style.background = 'rgba(255, 165, 0, 0.3)';
-            this.apiKeySettingsBtn.title = 'Click to configure API Key for real AI responses';
-        }
+    showWelcomeMessage() {
+        // Show a welcome message when the game starts
+        this.addMessage("🎲 Welcome to the Vibe Game! You stand at the entrance to a mysterious dungeon. Ancient runes glow faintly on the stone archway before you. What do you do?", 'dm');
     }
     
     async sendMessage() {
@@ -73,15 +63,7 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         } catch (error) {
             console.error('Error calling LLM:', error);
             let errorMessage = '*The mystical connection to the Dungeon Master has been disrupted. ';
-            
-            if (error.message.includes('Invalid API key')) {
-                errorMessage += 'Your API key seems to be invalid. Please check your settings.*';
-            } else if (error.message.includes('401')) {
-                errorMessage += 'Authentication failed. Please verify your API key.*';
-            } else {
-                errorMessage += 'Please try again in a moment.*';
-            }
-            
+            errorMessage += 'Please try again in a moment.*';
             this.addMessage(errorMessage, 'dm');
         } finally {
             this.showLoading(false);
@@ -95,81 +77,41 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
             content: userMessage
         });
 
-        // Try to get API key
-        const apiKey = await window.apiKeyManager.getApiKey();
-        
-        if (apiKey) {
-            try {
-                return await this.callAnthropicAPI(apiKey);
-            } catch (error) {
-                console.error('Anthropic API Error:', error);
-                // Fall back to mock response
-                return this.getMockResponse(userMessage);
-            }
-        } else {
-            // User chose to skip API key, use mock responses
+        try {
+            return await this.callNetlifyFunction();
+        } catch (error) {
+            console.error('Netlify Function Error:', error);
+            // Fall back to mock response
             return this.getMockResponse(userMessage);
         }
     }
 
-    async callAnthropicAPI(apiKey) {
-        // Use Netlify serverless function (or CORS proxy for GitHub Pages)
-        const isNetlify = window.location.hostname.includes('netlify.app');
+    async callNetlifyFunction() {
+        // Use Netlify serverless function (API key handled server-side)
+        console.log('🔧 Calling Netlify serverless function');
         
-        let response;
-        if (isNetlify) {
-            // Use Netlify function
-            console.log('🔧 Using Netlify serverless function for game');
-            response = await fetch('/.netlify/functions/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    messages: this.conversationHistory,
-                    apiKey: apiKey  // Pass API key in body for Netlify function
-                })
-            });
-        } else {
-            // Use CORS proxy for GitHub Pages
-            console.log('🔧 Using CORS proxy for GitHub Pages');
-            response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
-                },
-                body: JSON.stringify({
-                    model: 'claude-3-5-haiku-20241022',
-                    max_tokens: 200,
-                    temperature: 0.8,
-                    system: this.systemPrompt,
-                    messages: this.conversationHistory
-                })
-            });
-        }
+        const response = await fetch('/.netlify/functions/chat', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                messages: this.conversationHistory
+            })
+        });
 
         if (!response.ok) {
-            if (response.status === 401) {
-                // Invalid API key - clear it and prompt again
-                window.apiKeyManager.clearApiKey();
-                this.showApiKeyStatus();
-                throw new Error('Invalid API key - please check your key and try again');
-            }
             throw new Error(`API Error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
         
-        // Handle different response formats
+        // Handle response format from Netlify function
         let assistantMessage;
         if (data.choices && data.choices[0] && data.choices[0].message) {
-            // Netlify function format (OpenAI-like)
             assistantMessage = data.choices[0].message.content;
-        } else if (data.content && data.content[0] && data.content[0].text) {
-            // Direct Anthropic API format
-            assistantMessage = data.content[0].text;
+        } else if (data.fallback_response) {
+            assistantMessage = data.fallback_response;
         } else {
             throw new Error('Unexpected response format from API');
         }
@@ -183,6 +125,13 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         // Keep conversation history manageable (last 10 exchanges)
         if (this.conversationHistory.length > 20) {
             this.conversationHistory = this.conversationHistory.slice(-20);
+        }
+
+        // Show status indicator if using fallback
+        if (data.fallback || data.mode === 'mock' || data.mode === 'fallback') {
+            console.log(`🎭 Using ${data.mode || 'fallback'} mode`);
+        } else if (data.mode === 'live') {
+            console.log('🤖 Using live AI responses');
         }
 
         return assistantMessage;
@@ -217,7 +166,7 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
             "The air shimmers and a magical portal opens before you, revealing glimpses of three different realms: a fiery volcanic landscape, a serene underwater kingdom, and a floating city among the clouds. Which realm calls to your adventurous spirit?"
         ];
         
-        return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)] + "\n\n*(Mock response - add your Anthropic API key for real Claude AI)*";
+        return fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)] + "\n\n*(Fallback response - server connection issue)*";
     }
     
     addMessage(content, type) {

@@ -24,7 +24,7 @@ Then open http://localhost:8000
 
 ### Live Demo
 🌐 **[Play Now](https://qemqemqem.github.io/vibegame/)** (GitHub Pages - Mock responses)
-🤖 **[Play with Claude](https://vibegame.netlify.app/)** (Netlify - Real AI with Claude 3.5 Haiku)
+🤖 **[Play with Claude](https://vibegame.netlify.app/)** (Netlify - Real AI with server-side API key)
 
 ## 🏗️ Development
 
@@ -89,16 +89,26 @@ open tests/frontend/test_game_logic.html  # Frontend tests
 
 ### AI Integration
 - **Claude 3.5 Haiku**: Anthropic's fastest & cheapest model ($0.80/$4 per million tokens)
-- **Serverless Functions**: Secure API key handling via Netlify functions
+- **Server-Side API Keys**: Secure API key handling via Netlify environment variables
+- **Zero User Setup**: Players get instant AI responses without configuration
 - **Smart Fallbacks**: Comprehensive mock responses when API is unavailable
 - **Contextual Responses**: Different responses for combat, exploration, social interactions
 
 ## 🚀 Deployment
 
-### GitHub Pages (Auto-Deploy)
+### Netlify (Recommended - Real AI)
+**✨ Best experience with server-side API key management**
+1. Connect your repository to Netlify
+2. Set `ANTHROPIC_API_KEY` environment variable
+3. Deploy automatically - users get instant AI responses!
+
+**📖 See [DEPLOYMENT.md](DEPLOYMENT.md) for complete setup instructions!**
+
+### GitHub Pages (Fallback Mode)
 1. Push to main branch
 2. GitHub Actions runs tests
 3. Auto-deploys to https://qemqemqem.github.io/vibegame/
+4. Uses mock responses (no API key needed)
 
 ### Manual Deployment
 ```bash
@@ -113,14 +123,20 @@ cp -r frontend/* /your/web/server/
 ## 🛠️ Configuration
 
 ### API Key Setup (for Claude Integration)
+
+**For Production (Netlify - Recommended)**
+```bash
+# Set environment variable in Netlify dashboard
+# Site settings → Environment variables
+# Add: ANTHROPIC_API_KEY = sk-ant-api-your-key-here
+```
+
+**For Local Development**
 ```bash
 # Get your API key from https://console.anthropic.com/
 export ANTHROPIC_API_KEY="sk-ant-api-your-key-here"
 
-# For Netlify deployment
-netlify env:set ANTHROPIC_API_KEY your-key-here
-
-# Local development
+# Or use .env file
 cp .env.example .env
 # Edit .env and add your key
 ```
@@ -146,7 +162,7 @@ model: 'claude-3-5-haiku-20241022'
 // Typical response: ~200 tokens ≈ $0.0008 per message
 ```
 
-**📖 See [API_KEY_SETUP.md](docs/API_KEY_SETUP.md) for detailed setup instructions!**
+**📖 See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed setup instructions!**
 
 **🎨 See [DALLE_INTEGRATION.md](docs/DALLE_INTEGRATION.md) for image generation setup and usage!**
 

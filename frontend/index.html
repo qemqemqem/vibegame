@@ -5,22 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vibe Game - AI Dungeon Master</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="api-key-modal.css">
 </head>
 <body>
     <div class="game-container">
         <header class="game-header">
             <h1>🎲 Vibe Game</h1>
             <p>Your AI Dungeon Master awaits...</p>
-            <button id="apiKeySettingsBtn" class="api-key-settings-btn" title="API Key Settings">🔑</button>
         </header>
         
         <div class="chat-container" id="chatContainer">
-            <div class="message dm-message">
-                <div class="message-content">
-                    Welcome, brave adventurer! You find yourself at the entrance of a mysterious dungeon. The air is thick with magic and danger. What do you do?
-                </div>
-            </div>
+            <!-- Messages will be added dynamically -->
         </div>
         
         <div class="input-container">
@@ -39,7 +33,6 @@
         </div>
     </div>
     
-    <script src="api-key-manager.js"></script>
     <script src="script.js"></script>
 </body>
 </html>
