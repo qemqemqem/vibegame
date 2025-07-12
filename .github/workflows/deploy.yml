@@ -1,10 +1,7 @@
-name: Deploy Vibe Game
+name: Deploy Vibe Game (DISABLED - using static-deploy.yml)
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:  # Manual trigger only
 
 jobs:
   test:
