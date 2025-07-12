@@ -62,10 +62,12 @@ class ApiKeyManager {
      * Validate API key by making a test call
      */
     async validateApiKey(apiKey) {
-        if (this.isValidating) return false;
+        if (this.isValidating) return { valid: false, error: 'Validation already in progress' };
         this.isValidating = true;
 
         try {
+            console.log(`🔍 Validating API key: ${apiKey.substring(0, 20)}...`);
+            
             const response = await fetch('https://api.anthropic.com/v1/messages', {
                 method: 'POST',
                 headers: {
@@ -81,21 +83,30 @@ class ApiKeyManager {
             });
 
             this.isValidating = false;
+            
+            console.log(`📡 API Response Status: ${response.status}`);
 
             if (response.ok) {
-                console.log('✅ API key validation successful');
-                return true;
+                const data = await response.json();
+                console.log('✅ API key validation successful', data);
+                return { valid: true, error: null };
             } else if (response.status === 401) {
-                console.error('❌ API key validation failed: Invalid key');
-                return false;
+                const errorData = await response.text();
+                console.error('❌ API key validation failed: 401 Unauthorized', errorData);
+                return { valid: false, error: 'Invalid API key - please check your key is correct and active' };
+            } else if (response.status === 400) {
+                const errorData = await response.text();
+                console.error('❌ API key validation failed: 400 Bad Request', errorData);
+                return { valid: false, error: 'Bad request - API key format may be incorrect' };
             } else {
-                console.error('❌ API key validation failed:', response.status);
-                return false;
+                const errorData = await response.text();
+                console.error(`❌ API key validation failed: ${response.status}`, errorData);
+                return { valid: false, error: `API error: ${response.status} ${response.statusText}` };
             }
         } catch (error) {
             this.isValidating = false;
             console.error('❌ API key validation error:', error);
-            return false;
+            return { valid: false, error: `Network error: ${error.message}` };
         }
     }
 
@@ -146,7 +157,7 @@ class ApiKeyManager {
                         </div>
                         <div class="api-key-input-section">
                             <label for="apiKeyInput">Anthropic API Key:</label>
-                            <input type="password" id="apiKeyInput" placeholder="sk-ant-api..." class="api-key-input">
+                            <input type="text" id="apiKeyInput" placeholder="sk-ant-api03-..." class="api-key-input" spellcheck="false">
                             <div class="input-hint">Your key will be stored securely in your browser</div>
                         </div>
                         <div class="modal-actions">
@@ -173,9 +184,13 @@ class ApiKeyManager {
             // Handle input changes
             apiKeyInput.addEventListener('input', () => {
                 const key = apiKeyInput.value.trim();
-                validateBtn.disabled = !key.startsWith('sk-ant-');
-                if (key && !key.startsWith('sk-ant-')) {
-                    statusDiv.innerHTML = '⚠️ API key should start with "sk-ant-"';
+                validateBtn.disabled = key.length < 10; // Less strict initial check
+                
+                if (key.length > 0 && !key.startsWith('sk-ant-api')) {
+                    statusDiv.innerHTML = '⚠️ API key should start with "sk-ant-api"';
+                    statusDiv.className = 'validation-status warning';
+                } else if (key.length > 0 && key.length < 50) {
+                    statusDiv.innerHTML = '⚠️ Make sure you copied the complete API key';
                     statusDiv.className = 'validation-status warning';
                 } else {
                     statusDiv.innerHTML = '';
@@ -193,20 +208,34 @@ class ApiKeyManager {
             // Validate and save
             validateBtn.addEventListener('click', async () => {
                 const apiKey = apiKeyInput.value.trim();
-                if (!apiKey.startsWith('sk-ant-')) {
-                    statusDiv.innerHTML = '❌ Invalid API key format';
+                
+                // Basic format check
+                if (!apiKey) {
+                    statusDiv.innerHTML = '❌ Please enter your API key';
+                    statusDiv.className = 'validation-status error';
+                    return;
+                }
+                
+                if (!apiKey.startsWith('sk-ant-api')) {
+                    statusDiv.innerHTML = '❌ API key should start with "sk-ant-api"';
+                    statusDiv.className = 'validation-status error';
+                    return;
+                }
+                
+                if (apiKey.length < 50) {
+                    statusDiv.innerHTML = '❌ API key seems too short - make sure you copied the full key';
                     statusDiv.className = 'validation-status error';
                     return;
                 }
 
                 validateBtn.disabled = true;
                 validateBtn.textContent = '🔄 Validating...';
-                statusDiv.innerHTML = '🔄 Testing your API key...';
+                statusDiv.innerHTML = '🔄 Testing your API key with Claude API...';
                 statusDiv.className = 'validation-status info';
 
-                const isValid = await this.validateApiKey(apiKey);
+                const result = await this.validateApiKey(apiKey);
                 
-                if (isValid) {
+                if (result.valid) {
                     statusDiv.innerHTML = '✅ API key validated successfully!';
                     statusDiv.className = 'validation-status success';
                     setTimeout(() => {
@@ -214,10 +243,13 @@ class ApiKeyManager {
                         resolve(apiKey);
                     }, 1000);
                 } else {
-                    statusDiv.innerHTML = '❌ Invalid API key. Please check and try again.';
+                    statusDiv.innerHTML = `❌ ${result.error}`;
                     statusDiv.className = 'validation-status error';
                     validateBtn.disabled = false;
                     validateBtn.textContent = '✅ Validate & Save';
+                    
+                    // Add debugging info
+                    console.error('Validation failed:', result);
                 }
             });
 
