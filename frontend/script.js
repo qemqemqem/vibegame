@@ -280,7 +280,9 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
         
         try {
             const response = await this.callLLMWithStreaming(message);
-            // Response handling is done in the streaming callback
+            if (response) {
+                this.addMessage(response, 'dm');
+            }
         } catch (error) {
             console.error('Error calling LLM:', error);
             let errorMessage = '*System Error: ';
@@ -320,7 +322,7 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
             // Fall back to mock response with streaming effect
             const fallbackResponse = this.getMockResponse(userMessage);
             await this.simulateStreamingResponse(fallbackResponse);
-            return fallbackResponse;
+            return null; // Don't return response since it's already displayed via streaming
         }
     }
 
