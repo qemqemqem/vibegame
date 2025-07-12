@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌊 Streaming Test - Vibe Game</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .test-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .message {
+            max-width: 85%;
+            padding: 15px;
+            border-radius: 15px;
+            margin: 10px 0;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .streaming-cursor {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: bold;
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        .test-button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .test-button:hover {
+            background: #764ba2;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .info { color: #ffff00; }
+    </style>
+</head>
+<body>
+    <h1>🌊 Streaming Test - Vibe Game</h1>
+    <p>This test verifies that the streaming functionality works correctly.</p>
+    
+    <div class="test-container">
+        <h2>Manual Streaming Test</h2>
+        <button class="test-button" onclick="testStreamingSimulation()">Test Streaming Simulation</button>
+        <div id="streaming-test-area"></div>
+    </div>
+    
+    <div class="test-container">
+        <h2>Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+
+    <script>
+        // Mock the streaming functionality from the game
+        class StreamingTester {
+            constructor() {
+                this.streamingMessages = new Map();
+                this.nextMessageId = 1;
+            }
+
+            addStreamingMessage(type, container) {
+                const id = `msg_${this.nextMessageId++}`;
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'message';
+                messageDiv.id = id;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'message-content';
+                contentDiv.textContent = '';
+                
+                const cursor = document.createElement('span');
+                cursor.className = 'streaming-cursor';
+                cursor.textContent = '▋';
+                
+                messageDiv.appendChild(contentDiv);
+                messageDiv.appendChild(cursor);
+                container.appendChild(messageDiv);
+                
+                const message = {
+                    id: id,
+                    type: type,
+                    content: '',
+                    isStreaming: true,
+                    element: messageDiv,
+                    contentElement: contentDiv,
+                    cursorElement: cursor
+                };
+                
+                this.streamingMessages.set(id, message);
+                return message;
+            }
+
+            updateStreamingMessage(id, newContent) {
+                const message = this.streamingMessages.get(id);
+                if (!message) {
+                    throw new Error('Streaming message not found');
+                }
+                
+                message.content += newContent;
+                message.contentElement.textContent = message.content;
+                return message;
+            }
+
+            finishStreamingMessage(id) {
+                const message = this.streamingMessages.get(id);
+                if (!message) {
+                    throw new Error('Streaming message not found');
+                }
+                
+                message.isStreaming = false;
+                if (message.cursorElement) {
+                    message.cursorElement.remove();
+                }
+                return message;
+            }
+
+            async simulateStreamingResponse(fullResponse, container) {
+                const streamingMessage = this.addStreamingMessage('dm', container);
+                const words = fullResponse.split(' ');
+                
+                for (let i = 0; i < words.length; i++) {
+                    const word = words[i] + (i < words.length - 1 ? ' ' : '');
+                    this.updateStreamingMessage(streamingMessage.id, word);
+                    
+                    // Add delay to simulate streaming
+                    await new Promise(resolve => setTimeout(resolve, 150 + Math.random() * 200));
+                }
+                
+                this.finishStreamingMessage(streamingMessage.id);
+            }
+        }
+
+        const tester = new StreamingTester();
+
+        function testStreamingSimulation() {
+            const container = document.getElementById('streaming-test-area');
+            const testMessage = "You venture deeper into the mystical dungeon, your torchlight flickering against ancient stone walls carved with mysterious runes. The sound of dripping water echoes through the chamber, and you notice a faint glow emanating from deeper within. What do you do next?";
+            
+            // Clear previous tests
+            container.innerHTML = '';
+            
+            logTest('🌊 Starting streaming simulation...', 'info');
+            tester.simulateStreamingResponse(testMessage, container);
+        }
+
+        function logTest(message, type = '') {
+            const results = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            results.appendChild(div);
+        }
+
+        // Run automated tests
+        document.addEventListener('DOMContentLoaded', function() {
+            logTest('🧪 Streaming Test Suite Started', 'info');
+            
+            // Test 1: Basic streaming message creation
+            try {
+                const testContainer = document.createElement('div');
+                const message = tester.addStreamingMessage('dm', testContainer);
+                if (message.isStreaming && message.content === '' && message.id) {
+                    logTest('✅ Test 1: Basic streaming message creation - PASSED', 'pass');
+                } else {
+                    logTest('❌ Test 1: Basic streaming message creation - FAILED', 'fail');
+                }
+            } catch (e) {
+                logTest('❌ Test 1: Basic streaming message creation - ERROR: ' + e.message, 'fail');
+            }
+            
+            // Test 2: Message content updates
+            try {
+                const testContainer = document.createElement('div');
+                const message = tester.addStreamingMessage('dm', testContainer);
+                tester.updateStreamingMessage(message.id, 'Hello');
+                tester.updateStreamingMessage(message.id, ' world');
+                
+                if (message.content === 'Hello world') {
+                    logTest('✅ Test 2: Message content updates - PASSED', 'pass');
+                } else {
+                    logTest('❌ Test 2: Message content updates - FAILED (content: "' + message.content + '")', 'fail');
+                }
+            } catch (e) {
+                logTest('❌ Test 2: Message content updates - ERROR: ' + e.message, 'fail');
+            }
+            
+            // Test 3: Finish streaming message
+            try {
+                const testContainer = document.createElement('div');
+                const message = tester.addStreamingMessage('dm', testContainer);
+                tester.updateStreamingMessage(message.id, 'Complete message');
+                tester.finishStreamingMessage(message.id);
+                
+                if (!message.isStreaming) {
+                    logTest('✅ Test 3: Finish streaming message - PASSED', 'pass');
+                } else {
+                    logTest('❌ Test 3: Finish streaming message - FAILED (still streaming)', 'fail');
+                }
+            } catch (e) {
+                logTest('❌ Test 3: Finish streaming message - ERROR: ' + e.message, 'fail');
+            }
+            
+            logTest('🎉 Automated tests completed! Click the button above to see streaming in action.', 'info');
+        });
+    </script>
+</body>
+</html>
