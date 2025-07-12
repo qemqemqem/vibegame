@@ -79,7 +79,7 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { messages, apiKey } = JSON.parse(event.body);
+    const { messages } = JSON.parse(event.body);
     
     if (!messages || !Array.isArray(messages)) {
       return {
@@ -89,22 +89,38 @@ exports.handler = async (event, context) => {
       };
     }
 
-    if (!apiKey) {
-      return {
-        statusCode: 400,
-        headers,
-        body: JSON.stringify({ error: 'API key required' }),
-      };
-    }
-
     // Get the user's message for fallback context
     const userMessage = messages.find(msg => msg.role === 'user')?.content || '';
+
+    // Get API key from environment variable
+    const apiKey = process.env.ANTHROPIC_API_KEY;
+    
+    if (!apiKey) {
+      console.log('No ANTHROPIC_API_KEY environment variable found, using fallback responses');
+      // Use contextual fallback response
+      const fallbackResponse = getContextualFallback(userMessage);
+      
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          choices: [{
+            message: {
+              content: `${fallbackResponse}\n\n*(Note: Using mock responses - no API key configured)*`,
+              role: 'assistant'
+            }
+          }],
+          fallback: true,
+          mode: 'mock'
+        }),
+      };
+    }
 
     // Prepare messages for Anthropic
     const anthropicMessages = messages.filter(msg => msg.role !== 'system');
     
     try {
-      // Initialize Anthropic client with user's API key
+      // Initialize Anthropic client with environment API key
       const anthropic = new Anthropic({
         apiKey: apiKey,
       });
@@ -133,7 +149,8 @@ exports.handler = async (event, context) => {
             output_tokens: response.usage.output_tokens,
             total_tokens: response.usage.input_tokens + response.usage.output_tokens
           },
-          model: 'claude-3-5-haiku-20241022'
+          model: 'claude-3-5-haiku-20241022',
+          mode: 'live'
         }),
       };
 
@@ -154,7 +171,8 @@ exports.handler = async (event, context) => {
             }
           }],
           fallback: true,
-          error: 'API temporarily unavailable'
+          error: 'API temporarily unavailable',
+          mode: 'fallback'
         }),
       };
     }
