@@ -1,0 +1,148 @@
+# 🎲 Vibe Game Development Rules
+
+## Core Development Philosophy
+- **Test-Driven Development is our foundation** - Write tests first, make them pass
+- **Move fast with technical excellence** - Quality over speed
+- **Focus obsessively on working software** - Every feature must work perfectly
+- **"Do Right Longer"** - maintain discipline through the entire project
+- **Make one change at a time, always verify it works**
+
+## Testing Rules (CRITICAL - NO EXCEPTIONS)
+
+### Test-First Development
+- Write one test at a time
+- **Never proceed past failing tests** - this is critical for game reliability
+- Start with the simplest solution that could work
+- Either write a test OR make a failing test pass - never both
+- A test should make just one assertion
+- Don't make any changes to the application code until we see the test fail
+- After a failed implementation attempt:
+  1. Use `git restore ./lib` to revert all code changes
+  2. Re-run the failing test to confirm we're back to the original failure
+  3. Think through a simpler solution before making any new changes
+  4. If no simpler solution is apparent, ask for help rather than trying increasingly complex fixes
+
+### Test Quality for Games
+- No sleeping in tests - use polling/waiting mechanisms for async game state
+- Keep test data simple and shared across languages (Python backend, JavaScript frontend)
+- Use identical test data when testing game logic across multiple languages
+- Use fixtures for consistent game state setup
+- Test game mechanics thoroughly - edge cases in games can break the entire experience
+
+### Testing Process
+- Make one test pass completely before moving on
+- Run full test suite before suggesting improvements
+- Maintain high test coverage as defense against regression
+- Game state changes must be thoroughly tested
+
+## Game Development Specific Rules
+
+### Game Architecture
+- **Frontend**: Vanilla HTML/CSS/JavaScript (mobile-first design)
+- **Backend**: Python with HTTP server and LiteLLM integration
+- **AI Integration**: Mock mode for testing, real LLM for production
+- **Testing**: pytest for backend, custom browser tests for frontend
+
+### Game State Management
+- All game state changes must be predictable and testable
+- Use immutable state patterns where possible
+- AI responses should be deterministic in test mode
+- Always maintain game state consistency between frontend and backend
+
+### AI/DM Integration
+- **Mock Mode**: Use comprehensive fallback responses for testing
+- **Real Mode**: LiteLLM integration with proper error handling
+- Context awareness - DM remembers player journey
+- Different response patterns for combat, exploration, social interactions
+
+### Mobile-First Game Design
+- Perfect for vibecoding anywhere
+- Touch-friendly interfaces
+- Responsive design for all screen sizes
+- Consider battery usage and network conditions
+
+## Code Style and Technical Practices
+
+### Python Backend
+- Use type hints consistently
+- Follow PEP 8 style guide
+- Prefer functional programming over OOP where possible
+- Use dataclasses for game state models
+- Implement proper error handling for AI/API failures
+
+### JavaScript Frontend
+- Use modern ES6+ features
+- Implement proper error handling for network requests
+- Use async/await for API calls
+- Maintain clean separation between game logic and UI
+
+### File Organization
+```
+vibegame/
+├── frontend/          # Game interface (HTML/CSS/JS)
+├── backend/           # Python server with LiteLLM
+├── tests/             # Comprehensive test suite
+├── config/            # Configuration files
+└── docs/              # Documentation
+```
+
+### Testing File Structure
+- Backend tests: `tests/backend/`
+- Frontend tests: `tests/frontend/`
+- E2E tests: Complete user journey validation
+- Use descriptive test names that explain game scenarios
+
+## Communication Style
+- Direct and technical communication
+- No emotional management - stick to facts
+- Celebrate wins but focus on next steps
+- "Fast and Physical" - rapid, excellent execution
+- "Do Right Longer" - maintain quality standards
+
+## Error Handling and Debugging
+- Analyze all moving parts before making changes
+- After 2 failed fix attempts, pause and explain system understanding
+- Map data flow from backend to frontend before fixing UI issues
+- For each failure, explain what the test verifies and how the system achieves that goal
+
+## Security and Performance
+- Rate limiting on API endpoints
+- Input validation for all user interactions
+- Secure handling of API keys (environment variables)
+- Optimize for mobile performance
+- Consider offline functionality
+
+## Development Workflow
+1. **Read the task requirements carefully**
+2. **Write a failing test first** (this protects against bat attacks!)
+3. **Implement the minimal code to make the test pass**
+4. **Run all tests to ensure no regressions**
+5. **Refactor if needed while keeping tests green**
+6. **Update documentation if the API changes**
+
+## Game-Specific Testing Scenarios
+- Player actions and AI responses
+- Game state persistence
+- Error recovery (network failures, API timeouts)
+- Mobile touch interactions
+- Cross-browser compatibility
+- Performance under load
+
+## Cultural Practices
+- **Respect the bat attack cultural practice** - Never write code before seeing a failing test
+- Acknowledge this risk explicitly when implementing features
+- The user's cultural belief about test-first development is sacred
+
+## Documentation Requirements
+- Update README.md for new features
+- Document game mechanics and AI behavior
+- Maintain API documentation for backend endpoints
+- Include setup instructions for new developers
+
+## Deployment and CI/CD
+- GitHub Actions for automated testing
+- Auto-deploy to GitHub Pages
+- Test coverage reporting
+- Performance monitoring
+
+Remember: This is a vibe game for vibecoding adventures. Keep it fun, keep it tested, and keep it working!
