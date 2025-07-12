@@ -1,9 +1,5 @@
 const { Anthropic } = require('@anthropic-ai/sdk');
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 const DUNGEON_MASTER_PROMPT = `You are an expert Dungeon Master running an immersive fantasy RPG adventure. Your role is to:
 
 1. Create vivid, engaging scenarios that respond to player actions
@@ -83,13 +79,21 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const { messages } = JSON.parse(event.body);
+    const { messages, apiKey } = JSON.parse(event.body);
     
     if (!messages || !Array.isArray(messages)) {
       return {
         statusCode: 400,
         headers,
         body: JSON.stringify({ error: 'Invalid messages format' }),
+      };
+    }
+
+    if (!apiKey) {
+      return {
+        statusCode: 400,
+        headers,
+        body: JSON.stringify({ error: 'API key required' }),
       };
     }
 
@@ -100,6 +104,11 @@ exports.handler = async (event, context) => {
     const anthropicMessages = messages.filter(msg => msg.role !== 'system');
     
     try {
+      // Initialize Anthropic client with user's API key
+      const anthropic = new Anthropic({
+        apiKey: apiKey,
+      });
+
       // Call Anthropic's Claude 3.5 Haiku (fastest & cheapest)
       const response = await anthropic.messages.create({
         model: 'claude-3-5-haiku-20241022',

@@ -111,22 +111,42 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     }
 
     async callAnthropicAPI(apiKey) {
-        // Use CORS proxy to bypass GitHub Pages CORS restrictions
-        const response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model: 'claude-3-5-haiku-20241022',
-                max_tokens: 200,
-                temperature: 0.8,
-                system: this.systemPrompt,
-                messages: this.conversationHistory
-            })
-        });
+        // Use Netlify serverless function (or CORS proxy for GitHub Pages)
+        const isNetlify = window.location.hostname.includes('netlify.app');
+        
+        let response;
+        if (isNetlify) {
+            // Use Netlify function
+            console.log('🔧 Using Netlify serverless function for game');
+            response = await fetch('/.netlify/functions/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    messages: this.conversationHistory,
+                    apiKey: apiKey  // Pass API key in body for Netlify function
+                })
+            });
+        } else {
+            // Use CORS proxy for GitHub Pages
+            console.log('🔧 Using CORS proxy for GitHub Pages');
+            response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-api-key': apiKey,
+                    'anthropic-version': '2023-06-01'
+                },
+                body: JSON.stringify({
+                    model: 'claude-3-5-haiku-20241022',
+                    max_tokens: 200,
+                    temperature: 0.8,
+                    system: this.systemPrompt,
+                    messages: this.conversationHistory
+                })
+            });
+        }
 
         if (!response.ok) {
             if (response.status === 401) {

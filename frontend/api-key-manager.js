@@ -68,20 +68,40 @@ class ApiKeyManager {
         try {
             console.log(`🔍 Validating API key: ${apiKey.substring(0, 20)}...`);
             
-            // Use CORS proxy to bypass GitHub Pages CORS restrictions
-            const response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-api-key': apiKey,
-                    'anthropic-version': '2023-06-01'
-                },
-                body: JSON.stringify({
-                    model: 'claude-3-5-haiku-20241022',
-                    max_tokens: 10,
-                    messages: [{ role: 'user', content: 'Hello' }]
-                })
-            });
+            // Use Netlify serverless function (or CORS proxy for GitHub Pages)
+            const isNetlify = window.location.hostname.includes('netlify.app');
+            
+            let response;
+            if (isNetlify) {
+                // Use Netlify function - different request format
+                console.log('🔧 Using Netlify serverless function');
+                response = await fetch('/.netlify/functions/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        messages: [{ role: 'user', content: 'Hello' }],
+                        apiKey: apiKey  // Pass API key in body for Netlify function
+                    })
+                });
+            } else {
+                // Use CORS proxy for GitHub Pages
+                console.log('🔧 Using CORS proxy for GitHub Pages');
+                response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'x-api-key': apiKey,
+                        'anthropic-version': '2023-06-01'
+                    },
+                    body: JSON.stringify({
+                        model: 'claude-3-5-haiku-20241022',
+                        max_tokens: 10,
+                        messages: [{ role: 'user', content: 'Hello' }]
+                    })
+                });
+            }
 
             this.isValidating = false;
             
