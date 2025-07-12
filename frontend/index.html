@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Game - AI Dungeon Master</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <h1>🎲 Vibe Game</h1>
+            <p>Your AI Dungeon Master awaits...</p>
+        </header>
+        
+        <div class="chat-container" id="chatContainer">
+            <div class="message dm-message">
+                <div class="message-content">
+                    Welcome, brave adventurer! You find yourself at the entrance of a mysterious dungeon. The air is thick with magic and danger. What do you do?
+                </div>
+            </div>
+        </div>
+        
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="playerInput" placeholder="Type your action..." autocomplete="off">
+                <button id="sendButton">Send</button>
+            </div>
+            <div class="loading" id="loading" style="display: none;">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span>The Dungeon Master is thinking...</span>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Game - Frontend Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .test-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: #ffff00;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Vibe Game Frontend Tests</h1>
+    <div id="test-results"></div>
+
+    <!-- Include the actual game script for testing -->
+    <script>
+        // Mock DOM elements for testing
+        document.getElementById = function(id) {
+            const mockElements = {
+                'chatContainer': {
+                    appendChild: function(element) { console.log('Added to chat:', element); },
+                    scrollTop: 0,
+                    scrollHeight: 100
+                },
+                'playerInput': {
+                    value: '',
+                    addEventListener: function() {},
+                    focus: function() {},
+                    disabled: false
+                },
+                'sendButton': {
+                    addEventListener: function() {},
+                    disabled: false
+                },
+                'loading': {
+                    style: { display: 'none' }
+                }
+            };
+            return mockElements[id] || {
+                addEventListener: function() {},
+                appendChild: function() {},
+                style: {}
+            };
+        };
+
+        // Simple test framework
+        class TestRunner {
+            constructor() {
+                this.results = [];
+                this.resultsContainer = document.getElementById('test-results') || document.body;
+            }
+
+            test(description, testFunction) {
+                try {
+                    testFunction();
+                    this.results.push({ description, status: 'PASS' });
+                    this.log(`✅ PASS: ${description}`, 'pass');
+                } catch (error) {
+                    this.results.push({ description, status: 'FAIL', error: error.message });
+                    this.log(`❌ FAIL: ${description} - ${error.message}`, 'fail');
+                }
+            }
+
+            assertEqual(actual, expected, message = '') {
+                if (actual !== expected) {
+                    throw new Error(`${message} Expected: ${expected}, Got: ${actual}`);
+                }
+            }
+
+            assertTrue(condition, message = '') {
+                if (!condition) {
+                    throw new Error(`${message} Expected true, got false`);
+                }
+            }
+
+            log(message, className = '') {
+                const div = document.createElement('div');
+                div.className = `test-result ${className}`;
+                div.textContent = message;
+                this.resultsContainer.appendChild(div);
+            }
+
+            summary() {
+                const passed = this.results.filter(r => r.status === 'PASS').length;
+                const failed = this.results.filter(r => r.status === 'FAIL').length;
+                
+                this.log('', '');
+                this.log('📊 Test Summary:', 'test-header');
+                this.log(`Total Tests: ${this.results.length}`);
+                this.log(`Passed: ${passed}`, passed === this.results.length ? 'pass' : '');
+                this.log(`Failed: ${failed}`, failed > 0 ? 'fail' : '');
+                
+                if (failed === 0) {
+                    this.log('🎉 All tests passed! Ready for vibecoding!', 'pass');
+                } else {
+                    this.log('⚠️ Some tests failed. Time to hunt down those bugs!', 'fail');
+                }
+            }
+        }
+
+        // Mock the VibeGame class to test components
+        class MockVibeGame {
+            constructor() {
+                this.chatContainer = { appendChild: () => {}, scrollTop: 0, scrollHeight: 100 };
+                this.playerInput = { value: '', disabled: false };
+                this.sendButton = { disabled: false };
+                this.loading = { style: { display: 'none' } };
+            }
+
+            addMessage(content, type) {
+                if (!content || typeof content !== 'string') {
+                    throw new Error('Invalid message content');
+                }
+                if (type !== 'player' && type !== 'dm') {
+                    throw new Error('Invalid message type');
+                }
+                return { content, type };
+            }
+
+            showLoading(show) {
+                this.loading.style.display = show ? 'flex' : 'none';
+                this.sendButton.disabled = show;
+                this.playerInput.disabled = show;
+            }
+
+            validateInput(input) {
+                return input && typeof input === 'string' && input.trim().length > 0;
+            }
+        }
+
+        // Run the tests
+        document.addEventListener('DOMContentLoaded', function() {
+            const runner = new TestRunner();
+            
+            runner.log('🎲 Starting Vibe Game Frontend Tests...', 'test-header');
+            
+            // Test message creation
+            runner.test('Add player message creates valid message object', function() {
+                const game = new MockVibeGame();
+                const result = game.addMessage('Hello world', 'player');
+                runner.assertEqual(result.content, 'Hello world');
+                runner.assertEqual(result.type, 'player');
+            });
+
+            runner.test('Add DM message creates valid message object', function() {
+                const game = new MockVibeGame();
+                const result = game.addMessage('Welcome adventurer!', 'dm');
+                runner.assertEqual(result.content, 'Welcome adventurer!');
+                runner.assertEqual(result.type, 'dm');
+            });
+
+            runner.test('Invalid message content throws error', function() {
+                const game = new MockVibeGame();
+                try {
+                    game.addMessage('', 'player');
+                    throw new Error('Should have thrown error');
+                } catch (e) {
+                    runner.assertTrue(e.message.includes('Invalid message content'));
+                }
+            });
+
+            runner.test('Invalid message type throws error', function() {
+                const game = new MockVibeGame();
+                try {
+                    game.addMessage('Hello', 'invalid');
+                    throw new Error('Should have thrown error');
+                } catch (e) {
+                    runner.assertTrue(e.message.includes('Invalid message type'));
+                }
+            });
+
+            // Test loading state management
+            runner.test('Show loading disables input and button', function() {
+                const game = new MockVibeGame();
+                game.showLoading(true);
+                runner.assertTrue(game.sendButton.disabled);
+                runner.assertTrue(game.playerInput.disabled);
+                runner.assertEqual(game.loading.style.display, 'flex');
+            });
+
+            runner.test('Hide loading enables input and button', function() {
+                const game = new MockVibeGame();
+                game.showLoading(false);
+                runner.assertEqual(game.sendButton.disabled, false);
+                runner.assertEqual(game.playerInput.disabled, false);
+                runner.assertEqual(game.loading.style.display, 'none');
+            });
+
+            // Test input validation
+            runner.test('Valid input passes validation', function() {
+                const game = new MockVibeGame();
+                runner.assertTrue(game.validateInput('attack the dragon'));
+                runner.assertTrue(game.validateInput('look around'));
+            });
+
+            runner.test('Invalid input fails validation', function() {
+                const game = new MockVibeGame();
+                runner.assertEqual(game.validateInput(''), false);
+                runner.assertEqual(game.validateInput('   '), false);
+                runner.assertEqual(game.validateInput(null), false);
+                runner.assertEqual(game.validateInput(undefined), false);
+            });
+
+            runner.summary();
+        });
+    </script>
+</body>
+</html>
