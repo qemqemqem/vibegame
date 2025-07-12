@@ -111,7 +111,8 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     }
 
     async callAnthropicAPI(apiKey) {
-        const response = await fetch('https://api.anthropic.com/v1/messages', {
+        // Use CORS proxy to bypass GitHub Pages CORS restrictions
+        const response = await fetch('https://corsproxy.io/?https://api.anthropic.com/v1/messages', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
