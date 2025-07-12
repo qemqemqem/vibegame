@@ -47,6 +47,11 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     showWelcomeMessage() {
         // Show a welcome message when the game starts
         this.addMessage("🎲 Welcome to the Vibe Game! You stand at the entrance to a mysterious dungeon. Ancient runes glow faintly on the stone archway before you. What do you do?", 'dm');
+        
+        // Auto-focus the input for immediate typing
+        setTimeout(() => {
+            this.playerInput.focus();
+        }, 100);
     }
     
     async sendMessage() {
@@ -278,14 +283,20 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
             // Response handling is done in the streaming callback
         } catch (error) {
             console.error('Error calling LLM:', error);
-            let errorMessage = '*The mystical connection to the Dungeon Master has been disrupted. ';
+            let errorMessage = '*System Error: ';
             
-            if (error.message.includes('Invalid API key')) {
-                errorMessage += 'Your API key seems to be invalid. Please check your settings.*';
+            if (error.message.includes('window.apiKeyManager is undefined')) {
+                errorMessage += 'API key management system failed to load. Please refresh the page.*';
+            } else if (error.message.includes('Invalid API key')) {
+                errorMessage += 'Invalid API key. Please check your configuration.*';
             } else if (error.message.includes('401')) {
-                errorMessage += 'Authentication failed. Please verify your API key.*';
+                errorMessage += 'Authentication failed (HTTP 401). API key may be invalid.*';
+            } else if (error.message.includes('fetch')) {
+                errorMessage += 'Network connection failed. Check your internet connection.*';
+            } else if (error.message.includes('API Error')) {
+                errorMessage += `API request failed: ${error.message}*`;
             } else {
-                errorMessage += 'Please try again in a moment.*';
+                errorMessage += `${error.message || 'Unknown error occurred'}*`;
             }
             
             this.addMessage(errorMessage, 'dm');
@@ -301,107 +312,19 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
             content: userMessage
         });
 
-        // Try to get API key
-        const apiKey = await window.apiKeyManager.getApiKey();
-        
-        if (apiKey) {
-            try {
-                return await this.callStreamingAPI(apiKey);
-            } catch (error) {
-                console.error('Streaming API Error:', error);
-                // Fall back to regular response
-                const fallbackResponse = this.getMockResponse(userMessage);
-                this.addMessage(fallbackResponse, 'dm');
-                return fallbackResponse;
-            }
-        } else {
-            // Use mock response with streaming effect
+        try {
+            // Use Netlify function (API key handled server-side)
+            return await this.callNetlifyFunction();
+        } catch (error) {
+            console.error('Netlify Function Error:', error);
+            // Fall back to mock response with streaming effect
             const fallbackResponse = this.getMockResponse(userMessage);
             await this.simulateStreamingResponse(fallbackResponse);
             return fallbackResponse;
         }
     }
 
-    async callStreamingAPI(apiKey) {
-        const isNetlify = window.location.hostname.includes('netlify.app');
-        
-        if (isNetlify) {
-            // Use Netlify function with streaming
-            const response = await fetch('/.netlify/functions/chat-stream', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    messages: this.conversationHistory,
-                    apiKey: apiKey,
-                    stream: true
-                })
-            });
 
-            if (!response.ok) {
-                throw new Error(`API Error: ${response.status}`);
-            }
-
-            return await this.processStreamingResponse(response);
-        } else {
-            // Fallback to regular API call for non-Netlify environments
-            return await this.callAnthropicAPI(apiKey);
-        }
-    }
-
-    async processStreamingResponse(response) {
-        const streamingMessage = this.addStreamingMessage('dm');
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let assistantMessage = '';
-
-        try {
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const chunk = decoder.decode(value, { stream: true });
-                const lines = chunk.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const data = line.slice(6);
-                        if (data === '[DONE]') {
-                            this.finishStreamingMessage(streamingMessage.id);
-                            break;
-                        }
-                        
-                        try {
-                            const parsed = JSON.parse(data);
-                            if (parsed.content) {
-                                assistantMessage += parsed.content;
-                                this.updateStreamingMessage(streamingMessage.id, parsed.content);
-                            }
-                        } catch (e) {
-                            // Skip invalid JSON
-                        }
-                    }
-                }
-            }
-        } catch (error) {
-            console.error('Streaming error:', error);
-            this.finishStreamingMessage(streamingMessage.id);
-        }
-
-        // Add to conversation history
-        this.conversationHistory.push({
-            role: 'assistant',
-            content: assistantMessage
-        });
-
-        // Keep conversation history manageable
-        if (this.conversationHistory.length > 20) {
-            this.conversationHistory = this.conversationHistory.slice(-20);
-        }
-
-        return assistantMessage;
-    }
 
     async simulateStreamingResponse(fullResponse) {
         const streamingMessage = this.addStreamingMessage('dm');
