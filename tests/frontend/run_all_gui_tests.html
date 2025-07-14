@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Game - Complete GUI Test Suite</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+            margin: 0;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 10px;
+            color: white;
+        }
+        
+        .test-suite {
+            margin: 20px 0;
+            border: 2px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .suite-header {
+            background: #333;
+            padding: 15px;
+            color: #ffff00;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .suite-status {
+            font-size: 1.2em;
+        }
+        
+        .suite-content {
+            height: 400px;
+            border: none;
+            width: 100%;
+            background: #1a1a1a;
+        }
+        
+        .overall-summary {
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .summary-stat {
+            display: inline-block;
+            margin: 0 20px;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+        }
+        
+        .pass-count { color: #00ff00; }
+        .fail-count { color: #ff0000; }
+        .warning-count { color: #ffaa00; }
+        
+        .test-controls {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .btn {
+            background: #2a5298;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 0 10px;
+            font-family: monospace;
+        }
+        
+        .btn:hover {
+            background: #1e3c72;
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .running {
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00ff00, #2a5298);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🧪 Vibe Game - Complete GUI Test Suite</h1>
+        <p>Comprehensive testing to prevent UI regressions</p>
+        <div class="progress-bar">
+            <div class="progress-fill" id="overallProgress"></div>
+        </div>
+    </div>
+
+    <div class="test-controls">
+        <button class="btn" id="runAllBtn" onclick="runAllTests()">🚀 Run All Tests</button>
+        <button class="btn" id="runVisualBtn" onclick="runSingleTest('visual')">🎨 Visual Tests Only</button>
+        <button class="btn" id="runInteractionBtn" onclick="runSingleTest('interaction')">🖱️ Interaction Tests Only</button>
+        <button class="btn" id="runPerformanceBtn" onclick="runSingleTest('performance')">⚡ Performance Tests Only</button>
+        <button class="btn" id="exportResultsBtn" onclick="exportResults()" disabled>📄 Export Results</button>
+    </div>
+
+    <div class="overall-summary" id="overallSummary" style="display: none;">
+        <h2>📊 Overall Test Results</h2>
+        <div class="summary-stat pass-count">
+            <strong id="totalPassed">0</strong><br>Passed
+        </div>
+        <div class="summary-stat fail-count">
+            <strong id="totalFailed">0</strong><br>Failed
+        </div>
+        <div class="summary-stat warning-count">
+            <strong id="totalWarnings">0</strong><br>Warnings
+        </div>
+        <div class="summary-stat">
+            <strong id="totalTime">0</strong>ms<br>Total Time
+        </div>
+    </div>
+
+    <!-- Visual Regression Tests -->
+    <div class="test-suite">
+        <div class="suite-header" onclick="toggleSuite('visual')">
+            <span>🎨 Visual Regression Tests</span>
+            <span class="suite-status" id="visualStatus">⏳ Waiting</span>
+        </div>
+        <iframe class="suite-content" id="visualFrame" src="" style="display: none;"></iframe>
+    </div>
+
+    <!-- Interaction Tests -->
+    <div class="test-suite">
+        <div class="suite-header" onclick="toggleSuite('interaction')">
+            <span>🖱️ GUI Interaction Tests</span>
+            <span class="suite-status" id="interactionStatus">⏳ Waiting</span>
+        </div>
+        <iframe class="suite-content" id="interactionFrame" src="" style="display: none;"></iframe>
+    </div>
+
+    <!-- Performance Tests -->
+    <div class="test-suite">
+        <div class="suite-header" onclick="toggleSuite('performance')">
+            <span>⚡ Performance & Multimedia Tests</span>
+            <span class="suite-status" id="performanceStatus">⏳ Waiting</span>
+        </div>
+        <iframe class="suite-content" id="performanceFrame" src="" style="display: none;"></iframe>
+    </div>
+
+    <script>
+        class GuiTestRunner {
+            constructor() {
+                this.testSuites = {
+                    visual: {
+                        name: 'Visual Regression Tests',
+                        url: 'test_gui_visual_regression.html',
+                        frame: 'visualFrame',
+                        status: 'visualStatus',
+                        results: null
+                    },
+                    interaction: {
+                        name: 'GUI Interaction Tests',
+                        url: 'test_gui_interactions.html',
+                        frame: 'interactionFrame',
+                        status: 'interactionStatus',
+                        results: null
+                    },
+                    performance: {
+                        name: 'Performance & Multimedia Tests',
+                        url: 'test_gui_performance.html',
+                        frame: 'performanceFrame',
+                        status: 'performanceStatus',
+                        results: null
+                    }
+                };
+                
+                this.overallResults = {
+                    totalPassed: 0,
+                    totalFailed: 0,
+                    totalWarnings: 0,
+                    totalTime: 0,
+                    startTime: null,
+                    suiteResults: {}
+                };
+                
+                this.isRunning = false;
+            }
+
+            async runAllTests() {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.overallResults.startTime = performance.now();
+                this.resetResults();
+                
+                // Disable buttons
+                this.setButtonsEnabled(false);
+                
+                // Run each test suite
+                let completedSuites = 0;
+                const totalSuites = Object.keys(this.testSuites).length;
+                
+                for (const [key, suite] of Object.entries(this.testSuites)) {
+                    await this.runTestSuite(key);
+                    completedSuites++;
+                    this.updateProgress((completedSuites / totalSuites) * 100);
+                }
+                
+                this.finishAllTests();
+            }
+
+            async runSingleTest(suiteKey) {
+                if (this.isRunning) return;
+                
+                this.isRunning = true;
+                this.resetResults();
+                this.setButtonsEnabled(false);
+                
+                await this.runTestSuite(suiteKey);
+                this.updateProgress(100);
+                this.finishAllTests();
+            }
+
+            async runTestSuite(suiteKey) {
+                const suite = this.testSuites[suiteKey];
+                const frame = document.getElementById(suite.frame);
+                const statusEl = document.getElementById(suite.status);
+                
+                // Update status
+                statusEl.textContent = '🔄 Running';
+                statusEl.classList.add('running');
+                
+                return new Promise((resolve) => {
+                    // Load test suite
+                    frame.src = suite.url;
+                    frame.style.display = 'block';
+                    
+                    // Wait for tests to complete
+                    const checkCompletion = setInterval(() => {
+                        try {
+                            const testDocument = frame.contentDocument;
+                            if (testDocument) {
+                                const results = testDocument.getElementById('test-results');
+                                if (results && results.innerHTML.includes('Test Summary')) {
+                                    clearInterval(checkCompletion);
+                                    
+                                    // Extract results
+                                    this.extractResults(suiteKey, testDocument);
+                                    
+                                    // Update status
+                                    const suiteResults = this.overallResults.suiteResults[suiteKey];
+                                    if (suiteResults.failed > 0) {
+                                        statusEl.textContent = `❌ ${suiteResults.failed} Failed`;
+                                    } else {
+                                        statusEl.textContent = `✅ ${suiteResults.passed} Passed`;
+                                    }
+                                    statusEl.classList.remove('running');
+                                    
+                                    resolve();
+                                }
+                            }
+                        } catch (e) {
+                            // Cross-origin or other errors - continue checking
+                        }
+                    }, 500);
+                    
+                    // Timeout after 30 seconds
+                    setTimeout(() => {
+                        clearInterval(checkCompletion);
+                        statusEl.textContent = '⏰ Timeout';
+                        statusEl.classList.remove('running');
+                        this.overallResults.suiteResults[suiteKey] = {
+                            passed: 0,
+                            failed: 1,
+                            warnings: 0,
+                            error: 'Test suite timed out'
+                        };
+                        resolve();
+                    }, 30000);
+                });
+            }
+
+            extractResults(suiteKey, testDocument) {
+                const results = {
+                    passed: 0,
+                    failed: 0,
+                    warnings: 0,
+                    details: []
+                };
+                
+                try {
+                    // Look for test results in the document
+                    const resultElements = testDocument.querySelectorAll('.test-result');
+                    
+                    resultElements.forEach(el => {
+                        if (el.classList.contains('pass')) {
+                            results.passed++;
+                        } else if (el.classList.contains('fail')) {
+                            results.failed++;
+                        } else if (el.classList.contains('warning')) {
+                            results.warnings++;
+                        }
+                        
+                        results.details.push({
+                            status: el.classList.contains('pass') ? 'pass' : 
+                                   el.classList.contains('fail') ? 'fail' : 'warning',
+                            description: el.textContent.replace(/[✅❌⚠️]/g, '').trim()
+                        });
+                    });
+                    
+                    // Also check for summary information
+                    const summaryEl = testDocument.querySelector('.test-header');
+                    if (summaryEl && summaryEl.textContent.includes('Summary')) {
+                        const summaryText = summaryEl.textContent;
+                        const passMatch = summaryText.match(/(\d+) passed/);
+                        const failMatch = summaryText.match(/(\d+) failed/);
+                        
+                        if (passMatch) results.passed = parseInt(passMatch[1]);
+                        if (failMatch) results.failed = parseInt(failMatch[1]);
+                    }
+                } catch (e) {
+                    console.error('Error extracting results:', e);
+                    results.failed = 1;
+                    results.details.push({
+                        status: 'fail',
+                        description: `Error extracting results: ${e.message}`
+                    });
+                }
+                
+                this.overallResults.suiteResults[suiteKey] = results;
+            }
+
+            finishAllTests() {
+                this.overallResults.totalTime = performance.now() - this.overallResults.startTime;
+                
+                // Calculate totals
+                this.overallResults.totalPassed = 0;
+                this.overallResults.totalFailed = 0;
+                this.overallResults.totalWarnings = 0;
+                
+                Object.values(this.overallResults.suiteResults).forEach(suite => {
+                    this.overallResults.totalPassed += suite.passed || 0;
+                    this.overallResults.totalFailed += suite.failed || 0;
+                    this.overallResults.totalWarnings += suite.warnings || 0;
+                });
+                
+                // Update UI
+                document.getElementById('totalPassed').textContent = this.overallResults.totalPassed;
+                document.getElementById('totalFailed').textContent = this.overallResults.totalFailed;
+                document.getElementById('totalWarnings').textContent = this.overallResults.totalWarnings;
+                document.getElementById('totalTime').textContent = Math.round(this.overallResults.totalTime);
+                
+                document.getElementById('overallSummary').style.display = 'block';
+                
+                // Re-enable buttons
+                this.setButtonsEnabled(true);
+                document.getElementById('exportResultsBtn').disabled = false;
+                
+                this.isRunning = false;
+                
+                // Log results
+                if (this.overallResults.totalFailed === 0) {
+                    console.log('🎉 All GUI tests passed! No regressions detected.');
+                } else {
+                    console.log(`⚠️ ${this.overallResults.totalFailed} GUI tests failed - UI regressions detected!`);
+                }
+            }
+
+            resetResults() {
+                this.overallResults = {
+                    totalPassed: 0,
+                    totalFailed: 0,
+                    totalWarnings: 0,
+                    totalTime: 0,
+                    startTime: null,
+                    suiteResults: {}
+                };
+                
+                // Reset status displays
+                Object.values(this.testSuites).forEach(suite => {
+                    const statusEl = document.getElementById(suite.status);
+                    statusEl.textContent = '⏳ Waiting';
+                    statusEl.classList.remove('running');
+                });
+                
+                document.getElementById('overallSummary').style.display = 'none';
+                this.updateProgress(0);
+            }
+
+            updateProgress(percentage) {
+                document.getElementById('overallProgress').style.width = percentage + '%';
+            }
+
+            setButtonsEnabled(enabled) {
+                const buttons = ['runAllBtn', 'runVisualBtn', 'runInteractionBtn', 'runPerformanceBtn'];
+                buttons.forEach(id => {
+                    document.getElementById(id).disabled = !enabled;
+                });
+            }
+
+            exportResults() {
+                const report = {
+                    timestamp: new Date().toISOString(),
+                    summary: {
+                        totalPassed: this.overallResults.totalPassed,
+                        totalFailed: this.overallResults.totalFailed,
+                        totalWarnings: this.overallResults.totalWarnings,
+                        totalTime: Math.round(this.overallResults.totalTime),
+                        success: this.overallResults.totalFailed === 0
+                    },
+                    suites: this.overallResults.suiteResults
+                };
+                
+                const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `gui-test-results-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+        }
+
+        // Global functions
+        const testRunner = new GuiTestRunner();
+
+        function runAllTests() {
+            testRunner.runAllTests();
+        }
+
+        function runSingleTest(suiteKey) {
+            testRunner.runSingleTest(suiteKey);
+        }
+
+        function toggleSuite(suiteKey) {
+            const frame = document.getElementById(testRunner.testSuites[suiteKey].frame);
+            frame.style.display = frame.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function exportResults() {
+            testRunner.exportResults();
+        }
+
+        // Auto-run tests if requested via URL parameter
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('autorun') === 'true') {
+                setTimeout(() => runAllTests(), 1000);
+            }
+        });
+    </script>
+</body>
+</html>

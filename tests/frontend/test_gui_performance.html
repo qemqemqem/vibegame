@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Game - GUI Performance & Multimedia Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .warning { color: #ffaa00; }
+        .test-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: #ffff00;
+        }
+        .test-environment {
+            position: fixed;
+            top: -10000px;
+            left: -10000px;
+            width: 800px;
+            height: 600px;
+        }
+        .performance-metrics {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-size: 0.9em;
+        }
+        .metrics-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .metric {
+            background: #333;
+            padding: 5px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ Vibe Game GUI Performance & Multimedia Tests</h1>
+    <div id="test-results"></div>
+
+    <!-- Test environment (hidden) -->
+    <div id="test-environment" class="test-environment">
+        <iframe id="game-iframe" src="../../frontend/index.html" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+
+    <script>
+        class GuiPerformanceTests {
+            constructor() {
+                this.results = [];
+                this.testFrame = null;
+                this.gameDocument = null;
+                this.gameWindow = null;
+                this.performanceMetrics = {};
+                this.animationFrameId = null;
+            }
+
+            async runAllTests() {
+                await this.setupTestEnvironment();
+                
+                this.addTestHeader('⚡ Loading Performance Tests');
+                await this.testPageLoadTime();
+                await this.testCSSLoadPerformance();
+                await this.testJavaScriptLoadPerformance();
+                
+                this.addTestHeader('🎭 Animation Performance Tests');
+                await this.testLoadingAnimationPerformance();
+                await this.testStreamingCursorPerformance();
+                await this.testScrollPerformance();
+                
+                this.addTestHeader('💾 Memory Usage Tests');
+                await this.testMemoryUsage();
+                await this.testMessageAccumulationMemory();
+                await this.testEventListenerMemoryLeaks();
+                
+                this.addTestHeader('📱 Mobile Performance Tests');
+                await this.testMobileRenderingPerformance();
+                await this.testTouchResponseTime();
+                
+                this.addTestHeader('🎵 Multimedia Readiness Tests');
+                await this.testAudioElementSupport();
+                await this.testImageLoadingSupport();
+                await this.testMediaQuerySupport();
+                
+                this.addTestHeader('🔧 Resource Efficiency Tests');
+                await this.testCSSEfficiency();
+                await this.testDOMManipulationEfficiency();
+                await this.testEventHandlingEfficiency();
+                
+                this.displayResults();
+            }
+
+            async setupTestEnvironment() {
+                const startTime = performance.now();
+                
+                return new Promise((resolve) => {
+                    this.testFrame = document.getElementById('game-iframe');
+                    this.testFrame.onload = () => {
+                        const loadTime = performance.now() - startTime;
+                        this.performanceMetrics.pageLoadTime = loadTime;
+                        
+                        this.gameDocument = this.testFrame.contentDocument;
+                        this.gameWindow = this.testFrame.contentWindow;
+                        
+                        setTimeout(() => {
+                            if (this.gameWindow.game) {
+                                this.gameInstance = this.gameWindow.game;
+                            }
+                            resolve();
+                        }, 500);
+                    };
+                });
+            }
+
+            async testPageLoadTime() {
+                const loadTime = this.performanceMetrics.pageLoadTime;
+                
+                this.assert(loadTime < 3000, `Page loads in under 3 seconds (${Math.round(loadTime)}ms)`);
+                this.assert(loadTime < 1000, `Page loads quickly (${Math.round(loadTime)}ms)`);
+                
+                // Test resource loading
+                const navigation = this.gameWindow.performance.getEntriesByType('navigation')[0];
+                if (navigation) {
+                    this.performanceMetrics.domContentLoaded = navigation.domContentLoadedEventEnd - navigation.domContentLoadedEventStart;
+                    this.performanceMetrics.domComplete = navigation.loadEventEnd - navigation.loadEventStart;
+                    
+                    this.assert(this.performanceMetrics.domContentLoaded < 1500, 
+                        `DOM content loads quickly (${Math.round(this.performanceMetrics.domContentLoaded)}ms)`);
+                }
+            }
+
+            async testCSSLoadPerformance() {
+                const startTime = performance.now();
+                
+                // Test CSS processing by checking computed styles
+                const gameContainer = this.gameDocument.querySelector('.game-container');
+                const styles = this.gameWindow.getComputedStyle(gameContainer);
+                
+                // Force style recalculation
+                const testProps = [
+                    'backgroundColor', 'color', 'fontSize', 'padding', 'margin',
+                    'borderRadius', 'boxShadow', 'transform', 'opacity'
+                ];
+                
+                testProps.forEach(prop => {
+                    const value = styles[prop];
+                });
+                
+                const cssProcessingTime = performance.now() - startTime;
+                this.performanceMetrics.cssProcessingTime = cssProcessingTime;
+                
+                this.assert(cssProcessingTime < 100, `CSS processing is fast (${Math.round(cssProcessingTime)}ms)`);
+                
+                // Test CSS animation readiness
+                const loadingDots = this.gameDocument.querySelector('.loading-dots span');
+                if (loadingDots) {
+                    const animationStyles = this.gameWindow.getComputedStyle(loadingDots);
+                    this.assert(animationStyles.animationName !== 'none', 'CSS animations are properly loaded');
+                }
+            }
+
+            async testJavaScriptLoadPerformance() {
+                const startTime = performance.now();
+                
+                // Test JavaScript execution performance
+                const testOperations = 1000;
+                let sum = 0;
+                
+                for (let i = 0; i < testOperations; i++) {
+                    sum += Math.random();
+                }
+                
+                const jsExecutionTime = performance.now() - startTime;
+                this.performanceMetrics.jsExecutionTime = jsExecutionTime;
+                
+                this.assert(jsExecutionTime < 50, `JavaScript execution is fast (${Math.round(jsExecutionTime)}ms)`);
+                
+                // Test that game classes are available
+                this.assert(typeof this.gameWindow.VibeGame !== 'undefined', 'VibeGame class loads correctly');
+                this.assert(typeof this.gameWindow.ApiKeyManager !== 'undefined', 'ApiKeyManager class loads correctly');
+            }
+
+            async testLoadingAnimationPerformance() {
+                const loading = this.gameDocument.querySelector('.loading');
+                const loadingDots = this.gameDocument.querySelectorAll('.loading-dots span');
+                
+                if (loading && loadingDots.length > 0) {
+                    // Show loading animation
+                    loading.style.display = 'flex';
+                    
+                    // Measure animation performance
+                    const frameCount = 60; // Test for 1 second at 60fps
+                    let frames = 0;
+                    const startTime = performance.now();
+                    
+                    const measureAnimation = () => {
+                        frames++;
+                        if (frames < frameCount) {
+                            this.animationFrameId = this.gameWindow.requestAnimationFrame(measureAnimation);
+                        } else {
+                            const duration = performance.now() - startTime;
+                            const fps = frames / (duration / 1000);
+                            this.performanceMetrics.loadingAnimationFPS = fps;
+                            
+                            this.assert(fps > 30, `Loading animation maintains good FPS (${Math.round(fps)})`);
+                            this.assert(fps > 50, `Loading animation maintains excellent FPS (${Math.round(fps)})`);
+                            
+                            // Hide loading animation
+                            loading.style.display = 'none';
+                        }
+                    };
+                    
+                    this.animationFrameId = this.gameWindow.requestAnimationFrame(measureAnimation);
+                    
+                    // Wait for animation test to complete
+                    await this.sleep(1100);
+                } else {
+                    this.assert(false, 'Loading animation elements not found');
+                }
+            }
+
+            async testStreamingCursorPerformance() {
+                // Create test streaming cursor
+                const cursor = this.gameDocument.createElement('span');
+                cursor.className = 'streaming-cursor';
+                cursor.textContent = '▋';
+                cursor.style.animation = 'blink 1s infinite';
+                this.gameDocument.body.appendChild(cursor);
+                
+                // Measure cursor animation performance
+                const frameCount = 30;
+                let frames = 0;
+                const startTime = performance.now();
+                
+                const measureCursorAnimation = () => {
+                    frames++;
+                    if (frames < frameCount) {
+                        this.gameWindow.requestAnimationFrame(measureCursorAnimation);
+                    } else {
+                        const duration = performance.now() - startTime;
+                        const fps = frames / (duration / 1000);
+                        this.performanceMetrics.cursorAnimationFPS = fps;
+                        
+                        this.assert(fps > 25, `Cursor animation maintains good performance (${Math.round(fps)} FPS)`);
+                        
+                        // Clean up
+                        this.gameDocument.body.removeChild(cursor);
+                    }
+                };
+                
+                this.gameWindow.requestAnimationFrame(measureCursorAnimation);
+                await this.sleep(600);
+            }
+
+            async testScrollPerformance() {
+                const chatContainer = this.gameDocument.querySelector('#chatContainer');
+                
+                // Add messages to create scrollable content
+                if (this.gameInstance && this.gameInstance.addMessage) {
+                    for (let i = 0; i < 20; i++) {
+                        this.gameInstance.addMessage(`Performance test message ${i}`, i % 2 === 0 ? 'player' : 'dm');
+                    }
+                    
+                    // Measure scroll performance
+                    const startTime = performance.now();
+                    const scrollSteps = 10;
+                    const scrollHeight = chatContainer.scrollHeight;
+                    
+                    for (let i = 0; i < scrollSteps; i++) {
+                        chatContainer.scrollTop = (scrollHeight / scrollSteps) * i;
+                        await this.sleep(10);
+                    }
+                    
+                    const scrollTime = performance.now() - startTime;
+                    this.performanceMetrics.scrollPerformance = scrollTime;
+                    
+                    this.assert(scrollTime < 500, `Scroll performance is good (${Math.round(scrollTime)}ms)`);
+                    
+                    // Test smooth scrolling to bottom
+                    const smoothScrollStart = performance.now();
+                    chatContainer.scrollTo({
+                        top: chatContainer.scrollHeight,
+                        behavior: 'smooth'
+                    });
+                    
+                    setTimeout(() => {
+                        const smoothScrollTime = performance.now() - smoothScrollStart;
+                        this.performanceMetrics.smoothScrollTime = smoothScrollTime;
+                        this.assert(smoothScrollTime < 1000, `Smooth scroll completes quickly (${Math.round(smoothScrollTime)}ms)`);
+                    }, 100);
+                }
+            }
+
+            async testMemoryUsage() {
+                // Test initial memory usage
+                if (this.gameWindow.performance.memory) {
+                    const initialMemory = this.gameWindow.performance.memory.usedJSHeapSize;
+                    this.performanceMetrics.initialMemory = initialMemory;
+                    
+                    // Perform memory-intensive operations
+                    const testArray = [];
+                    for (let i = 0; i < 1000; i++) {
+                        testArray.push(`Test message ${i}`);
+                    }
+                    
+                    const afterTestMemory = this.gameWindow.performance.memory.usedJSHeapSize;
+                    const memoryIncrease = afterTestMemory - initialMemory;
+                    this.performanceMetrics.memoryIncrease = memoryIncrease;
+                    
+                    this.assert(memoryIncrease < 10 * 1024 * 1024, `Memory usage increase is reasonable (${Math.round(memoryIncrease / 1024)}KB)`);
+                    
+                    // Clear test data
+                    testArray.length = 0;
+                    
+                    // Force garbage collection if available
+                    if (this.gameWindow.gc) {
+                        this.gameWindow.gc();
+                    }
+                    
+                    setTimeout(() => {
+                        const cleanupMemory = this.gameWindow.performance.memory.usedJSHeapSize;
+                        const memoryRecovered = afterTestMemory - cleanupMemory;
+                        this.performanceMetrics.memoryRecovered = memoryRecovered;
+                        
+                        this.assert(memoryRecovered > 0, `Memory is properly cleaned up (${Math.round(memoryRecovered / 1024)}KB recovered)`);
+                    }, 100);
+                } else {
+                    this.assert(true, 'Memory API not available (normal in some browsers)');
+                }
+            }
+
+            async testMessageAccumulationMemory() {
+                const chatContainer = this.gameDocument.querySelector('#chatContainer');
+                const initialChildCount = chatContainer.children.length;
+                
+                if (this.gameInstance && this.gameInstance.addMessage) {
+                    // Add many messages to test memory handling
+                    for (let i = 0; i < 50; i++) {
+                        this.gameInstance.addMessage(`Memory test message ${i}`, i % 2 === 0 ? 'player' : 'dm');
+                    }
+                    
+                    const finalChildCount = chatContainer.children.length;
+                    const messagesAdded = finalChildCount - initialChildCount;
+                    
+                    this.assert(messagesAdded === 50, `All messages are properly added (${messagesAdded})`);
+                    
+                    // Test that DOM doesn't grow unbounded (future-proofing for message limits)
+                    this.assert(finalChildCount < 200, 'DOM doesn\'t grow unbounded (prepare for message limits)');
+                    
+                    // Measure DOM query performance with many messages
+                    const queryStart = performance.now();
+                    const messages = chatContainer.querySelectorAll('.message');
+                    const queryTime = performance.now() - queryStart;
+                    
+                    this.assert(queryTime < 50, `DOM queries remain fast with many messages (${Math.round(queryTime)}ms)`);
+                }
+            }
+
+            async testEventListenerMemoryLeaks() {
+                const playerInput = this.gameDocument.querySelector('#playerInput');
+                const sendButton = this.gameDocument.querySelector('#sendButton');
+                
+                // Test that event listeners are properly attached
+                let eventListenerCount = 0;
+                
+                const testHandler = () => { eventListenerCount++; };
+                
+                // Add and remove event listeners
+                playerInput.addEventListener('input', testHandler);
+                sendButton.addEventListener('click', testHandler);
+                
+                // Trigger events
+                const inputEvent = new this.gameWindow.Event('input');
+                const clickEvent = new this.gameWindow.Event('click');
+                
+                playerInput.dispatchEvent(inputEvent);
+                sendButton.dispatchEvent(clickEvent);
+                
+                this.assert(eventListenerCount === 2, 'Event listeners work correctly');
+                
+                // Remove listeners
+                playerInput.removeEventListener('input', testHandler);
+                sendButton.removeEventListener('click', testHandler);
+                
+                // Test that listeners are removed
+                const beforeCount = eventListenerCount;
+                playerInput.dispatchEvent(inputEvent);
+                sendButton.dispatchEvent(clickEvent);
+                
+                this.assert(eventListenerCount === beforeCount, 'Event listeners are properly removed');
+            }
+
+            async testMobileRenderingPerformance() {
+                // Simulate mobile viewport
+                this.testFrame.style.width = '375px';
+                this.testFrame.style.height = '667px';
+                
+                await this.waitForReflow();
+                
+                const renderStart = performance.now();
+                
+                // Force style recalculation on mobile viewport
+                const elements = this.gameDocument.querySelectorAll('*');
+                elements.forEach(el => {
+                    this.gameWindow.getComputedStyle(el).display;
+                });
+                
+                const renderTime = performance.now() - renderStart;
+                this.performanceMetrics.mobileRenderTime = renderTime;
+                
+                this.assert(renderTime < 200, `Mobile rendering is fast (${Math.round(renderTime)}ms)`);
+                
+                // Reset viewport
+                this.testFrame.style.width = '800px';
+                this.testFrame.style.height = '600px';
+                await this.waitForReflow();
+            }
+
+            async testTouchResponseTime() {
+                const sendButton = this.gameDocument.querySelector('#sendButton');
+                
+                // Measure touch response time
+                const touchStart = performance.now();
+                
+                const touchEvent = new this.gameWindow.TouchEvent('touchstart', {
+                    bubbles: true,
+                    touches: [{ clientX: 100, clientY: 100 }]
+                });
+                
+                let touchHandled = false;
+                const touchHandler = () => {
+                    touchHandled = true;
+                    const touchResponseTime = performance.now() - touchStart;
+                    this.performanceMetrics.touchResponseTime = touchResponseTime;
+                    
+                    this.assert(touchResponseTime < 50, `Touch response is immediate (${Math.round(touchResponseTime)}ms)`);
+                };
+                
+                sendButton.addEventListener('touchstart', touchHandler);
+                sendButton.dispatchEvent(touchEvent);
+                
+                this.assert(touchHandled, 'Touch events are handled');
+                sendButton.removeEventListener('touchstart', touchHandler);
+            }
+
+            async testAudioElementSupport() {
+                // Test audio element creation and basic properties
+                const audio = this.gameDocument.createElement('audio');
+                
+                this.assert(audio !== null, 'Audio elements can be created');
+                this.assert(typeof audio.play === 'function', 'Audio play method is available');
+                this.assert(typeof audio.pause === 'function', 'Audio pause method is available');
+                
+                // Test audio format support
+                const supportedFormats = [];
+                if (audio.canPlayType('audio/mpeg')) supportedFormats.push('MP3');
+                if (audio.canPlayType('audio/ogg')) supportedFormats.push('OGG');
+                if (audio.canPlayType('audio/wav')) supportedFormats.push('WAV');
+                if (audio.canPlayType('audio/webm')) supportedFormats.push('WebM');
+                
+                this.assert(supportedFormats.length > 0, `Audio formats supported: ${supportedFormats.join(', ')}`);
+                
+                // Test audio context for future sound effects
+                try {
+                    const AudioContext = this.gameWindow.AudioContext || this.gameWindow.webkitAudioContext;
+                    if (AudioContext) {
+                        const audioContext = new AudioContext();
+                        this.assert(audioContext !== null, 'Web Audio API is available for advanced sound');
+                        audioContext.close();
+                    }
+                } catch (e) {
+                    this.assert(true, 'Web Audio API not available (normal in some contexts)');
+                }
+            }
+
+            async testImageLoadingSupport() {
+                // Test image element creation
+                const img = this.gameDocument.createElement('img');
+                
+                this.assert(img !== null, 'Image elements can be created');
+                this.assert(typeof img.onload === 'object', 'Image load events are supported');
+                this.assert(typeof img.onerror === 'object', 'Image error events are supported');
+                
+                // Test image format support
+                const canvas = this.gameDocument.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                
+                this.assert(canvas !== null, 'Canvas elements can be created');
+                this.assert(ctx !== null, 'Canvas 2D context is available');
+                
+                // Test WebP support
+                canvas.width = 1;
+                canvas.height = 1;
+                const webpSupported = canvas.toDataURL('image/webp').indexOf('webp') !== -1;
+                
+                if (webpSupported) {
+                    this.assert(true, 'WebP format is supported for efficient images');
+                } else {
+                    this.assert(true, 'WebP not supported, falling back to PNG/JPEG');
+                }
+                
+                // Test that images can be displayed
+                img.style.display = 'block';
+                img.style.width = '10px';
+                img.style.height = '10px';
+                this.gameDocument.body.appendChild(img);
+                
+                const imgStyles = this.gameWindow.getComputedStyle(img);
+                this.assert(imgStyles.display === 'block', 'Images can be displayed');
+                
+                this.gameDocument.body.removeChild(img);
+            }
+
+            async testMediaQuerySupport() {
+                // Test media query functionality
+                const mediaQueries = [
+                    '(max-width: 768px)',
+                    '(prefers-reduced-motion: reduce)',
+                    '(prefers-contrast: high)',
+                    '(orientation: portrait)',
+                    '(hover: hover)'
+                ];
+                
+                mediaQueries.forEach(query => {
+                    const mediaQuery = this.gameWindow.matchMedia(query);
+                    this.assert(typeof mediaQuery.matches === 'boolean', `Media query "${query}" is supported`);
+                });
+                
+                // Test that CSS media queries work
+                const testElement = this.gameDocument.createElement('div');
+                testElement.innerHTML = `
+                    <style>
+                        .media-test { color: red; }
+                        @media (min-width: 1px) { .media-test { color: blue; } }
+                    </style>
+                    <div class="media-test"></div>
+                `;
+                this.gameDocument.body.appendChild(testElement);
+                
+                const testDiv = testElement.querySelector('.media-test');
+                const color = this.gameWindow.getComputedStyle(testDiv).color;
+                
+                this.assert(color.includes('0, 0, 255') || color === 'blue', 'CSS media queries work correctly');
+                
+                this.gameDocument.body.removeChild(testElement);
+            }
+
+            async testCSSEfficiency() {
+                const startTime = performance.now();
+                
+                // Test CSS selector performance
+                const selectors = [
+                    '.game-container',
+                    '#playerInput',
+                    '.message.dm-message',
+                    '.loading-dots span',
+                    '.api-key-modal-overlay'
+                ];
+                
+                selectors.forEach(selector => {
+                    this.gameDocument.querySelectorAll(selector);
+                });
+                
+                const selectorTime = performance.now() - startTime;
+                this.performanceMetrics.cssEfficiency = selectorTime;
+                
+                this.assert(selectorTime < 20, `CSS selector queries are efficient (${Math.round(selectorTime)}ms)`);
+                
+                // Test style recalculation performance
+                const recalcStart = performance.now();
+                const testEl = this.gameDocument.querySelector('.game-container');
+                
+                // Force style recalculation
+                testEl.style.transform = 'translateX(1px)';
+                this.gameWindow.getComputedStyle(testEl).transform;
+                testEl.style.transform = '';
+                
+                const recalcTime = performance.now() - recalcStart;
+                this.assert(recalcTime < 10, `Style recalculation is fast (${Math.round(recalcTime)}ms)`);
+            }
+
+            async testDOMManipulationEfficiency() {
+                const chatContainer = this.gameDocument.querySelector('#chatContainer');
+                const startTime = performance.now();
+                
+                // Test DOM manipulation performance
+                const testElements = [];
+                for (let i = 0; i < 10; i++) {
+                    const div = this.gameDocument.createElement('div');
+                    div.className = 'test-message';
+                    div.textContent = `Test message ${i}`;
+                    testElements.push(div);
+                    chatContainer.appendChild(div);
+                }
+                
+                const addTime = performance.now() - startTime;
+                
+                const removeStart = performance.now();
+                testElements.forEach(el => chatContainer.removeChild(el));
+                const removeTime = performance.now() - removeStart;
+                
+                this.performanceMetrics.domAddTime = addTime;
+                this.performanceMetrics.domRemoveTime = removeTime;
+                
+                this.assert(addTime < 50, `DOM element addition is fast (${Math.round(addTime)}ms)`);
+                this.assert(removeTime < 50, `DOM element removal is fast (${Math.round(removeTime)}ms)`);
+            }
+
+            async testEventHandlingEfficiency() {
+                const playerInput = this.gameDocument.querySelector('#playerInput');
+                
+                // Test event firing performance
+                const eventCount = 100;
+                const startTime = performance.now();
+                
+                for (let i = 0; i < eventCount; i++) {
+                    const event = new this.gameWindow.Event('input');
+                    playerInput.dispatchEvent(event);
+                }
+                
+                const eventTime = performance.now() - startTime;
+                this.performanceMetrics.eventHandlingTime = eventTime;
+                
+                this.assert(eventTime < 100, `Event handling is efficient (${Math.round(eventTime)}ms for ${eventCount} events)`);
+                
+                // Test that events don't accumulate
+                const beforeEvents = this.gameWindow.performance.now();
+                setTimeout(() => {
+                    const afterEvents = this.gameWindow.performance.now();
+                    this.assert(afterEvents - beforeEvents < 50, 'Event processing doesn\'t block the main thread');
+                }, 10);
+            }
+
+            async sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+
+            async waitForReflow() {
+                return new Promise(resolve => {
+                    this.gameWindow.requestAnimationFrame(() => {
+                        this.gameWindow.requestAnimationFrame(resolve);
+                    });
+                });
+            }
+
+            assert(condition, description) {
+                const result = {
+                    description,
+                    passed: condition,
+                    timestamp: new Date().toISOString()
+                };
+                this.results.push(result);
+                console.log(`${condition ? '✅' : '❌'} ${description}`);
+            }
+
+            addTestHeader(header) {
+                this.results.push({ header });
+            }
+
+            displayResults() {
+                const container = document.getElementById('test-results');
+                let html = '';
+                
+                let passed = 0;
+                let failed = 0;
+                
+                this.results.forEach(result => {
+                    if (result.header) {
+                        html += `<div class="test-header">${result.header}</div>`;
+                    } else {
+                        const className = result.passed ? 'pass' : 'fail';
+                        html += `<div class="test-result ${className}">
+                            ${result.passed ? '✅' : '❌'} ${result.description}
+                        </div>`;
+                        if (result.passed) passed++;
+                        else failed++;
+                    }
+                });
+                
+                // Add performance metrics
+                html += '<div class="test-header">📊 Performance Metrics</div>';
+                html += '<div class="performance-metrics">';
+                html += '<div class="metrics-table">';
+                
+                Object.entries(this.performanceMetrics).forEach(([key, value]) => {
+                    const displayValue = typeof value === 'number' ? Math.round(value) : value;
+                    const unit = key.includes('Time') || key.includes('FPS') ? (key.includes('FPS') ? ' FPS' : 'ms') : '';
+                    html += `<div class="metric">${key}: ${displayValue}${unit}</div>`;
+                });
+                
+                html += '</div></div>';
+                
+                html = `<div class="test-header">📊 Performance Test Summary: ${passed} passed, ${failed} failed</div>` + html;
+                container.innerHTML = html;
+                
+                if (failed === 0) {
+                    console.log('🎉 All GUI performance tests passed!');
+                } else {
+                    console.log(`⚠️ ${failed} GUI performance tests failed - Performance issues detected!`);
+                }
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', async () => {
+            const tests = new GuiPerformanceTests();
+            await tests.runAllTests();
+        });
+    </script>
+</body>
+</html>

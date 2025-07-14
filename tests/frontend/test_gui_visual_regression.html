@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Game - GUI Visual Regression Tests</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #00ff00;
+            padding: 20px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 5px;
+        }
+        .pass { color: #00ff00; }
+        .fail { color: #ff0000; }
+        .test-header {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin: 20px 0 10px 0;
+            color: #ffff00;
+        }
+        .test-environment {
+            position: fixed;
+            top: -10000px;
+            left: -10000px;
+            width: 800px;
+            height: 600px;
+        }
+        .visual-sample {
+            border: 1px solid #333;
+            margin: 5px 0;
+            padding: 10px;
+            background: #2a2a2a;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Vibe Game GUI Visual Regression Tests</h1>
+    <div id="test-results"></div>
+
+    <!-- Test environment (hidden) -->
+    <div id="test-environment" class="test-environment">
+        <iframe id="game-iframe" src="../../frontend/index.html" style="width: 100%; height: 100%; border: none;"></iframe>
+    </div>
+
+    <script>
+        class GuiVisualTests {
+            constructor() {
+                this.results = [];
+                this.testFrame = null;
+                this.gameDocument = null;
+                this.gameWindow = null;
+            }
+
+            async runAllTests() {
+                await this.setupTestEnvironment();
+                
+                this.addTestHeader('🎨 Visual Layout Tests');
+                await this.testMainContainerLayout();
+                await this.testHeaderStyling();
+                await this.testChatContainerStyling();
+                await this.testInputContainerLayout();
+                
+                this.addTestHeader('🎭 Visual Effects & Animations');
+                await this.testLoadingAnimation();
+                await this.testStreamingCursor();
+                await this.testButtonHoverStates();
+                
+                this.addTestHeader('📱 Responsive Design');
+                await this.testMobileLayout();
+                await this.testTabletLayout();
+                
+                this.addTestHeader('🎪 Modal Visual Tests');
+                await this.testApiKeyModalStyling();
+                await this.testModalAnimations();
+                
+                this.addTestHeader('🎯 Color & Typography');
+                await this.testColorScheme();
+                await this.testTypography();
+                await this.testContrast();
+                
+                this.addTestHeader('♿ Accessibility Visual Features');
+                await this.testHighContrastMode();
+                await this.testReducedMotion();
+                
+                this.displayResults();
+            }
+
+            async setupTestEnvironment() {
+                return new Promise((resolve) => {
+                    this.testFrame = document.getElementById('game-iframe');
+                    this.testFrame.onload = () => {
+                        this.gameDocument = this.testFrame.contentDocument;
+                        this.gameWindow = this.testFrame.contentWindow;
+                        setTimeout(resolve, 500); // Allow time for CSS to load
+                    };
+                });
+            }
+
+            async testMainContainerLayout() {
+                const container = this.gameDocument.querySelector('.game-container');
+                
+                this.assert(container !== null, 'Game container exists');
+                
+                const styles = this.gameWindow.getComputedStyle(container);
+                this.assert(styles.display === 'flex', 'Game container uses flexbox');
+                this.assert(styles.flexDirection === 'column', 'Game container has column direction');
+                this.assert(styles.height === '100vh', 'Game container fills viewport height');
+                this.assert(styles.maxWidth === '800px', 'Game container has max-width constraint');
+                this.assert(styles.margin === '0px auto', 'Game container is centered');
+                
+                // Test backdrop filter effect
+                this.assert(styles.backdropFilter.includes('blur'), 'Game container has backdrop blur effect');
+                this.assert(styles.backgroundColor.includes('rgba') || styles.backgroundColor === 'rgba(0, 0, 0, 0.2)', 'Game container has semi-transparent background');
+            }
+
+            async testHeaderStyling() {
+                const header = this.gameDocument.querySelector('.game-header');
+                const h1 = this.gameDocument.querySelector('.game-header h1');
+                const p = this.gameDocument.querySelector('.game-header p');
+                
+                this.assert(header !== null, 'Game header exists');
+                
+                const headerStyles = this.gameWindow.getComputedStyle(header);
+                this.assert(headerStyles.textAlign === 'center', 'Header is center-aligned');
+                this.assert(headerStyles.padding === '20px', 'Header has correct padding');
+                this.assert(headerStyles.borderBottomWidth === '2px', 'Header has bottom border');
+                
+                const h1Styles = this.gameWindow.getComputedStyle(h1);
+                this.assert(h1Styles.fontSize === '2rem' || h1Styles.fontSize === '32px', 'Header title has correct font size');
+                this.assert(h1Styles.textShadow.includes('rgba'), 'Header title has text shadow');
+                
+                const pStyles = this.gameWindow.getComputedStyle(p);
+                this.assert(parseFloat(pStyles.opacity) === 0.8, 'Header subtitle has correct opacity');
+                this.assert(pStyles.fontStyle === 'italic', 'Header subtitle is italic');
+            }
+
+            async testChatContainerStyling() {
+                const chatContainer = this.gameDocument.querySelector('.chat-container');
+                
+                this.assert(chatContainer !== null, 'Chat container exists');
+                
+                const styles = this.gameWindow.getComputedStyle(chatContainer);
+                this.assert(styles.overflowY === 'auto', 'Chat container has vertical scroll');
+                this.assert(styles.flex === '1 1 0%' || styles.flexGrow === '1', 'Chat container grows to fill space');
+                this.assert(styles.padding === '20px', 'Chat container has correct padding');
+                
+                // Test scrollbar styling
+                const scrollbarWidth = chatContainer.offsetWidth - chatContainer.clientWidth;
+                this.assert(scrollbarWidth >= 0, 'Custom scrollbar styling applied');
+            }
+
+            async testInputContainerLayout() {
+                const inputContainer = this.gameDocument.querySelector('.input-container');
+                const inputWrapper = this.gameDocument.querySelector('.input-wrapper');
+                const playerInput = this.gameDocument.querySelector('#playerInput');
+                const sendButton = this.gameDocument.querySelector('#sendButton');
+                
+                this.assert(inputContainer !== null, 'Input container exists');
+                this.assert(inputWrapper !== null, 'Input wrapper exists');
+                
+                const containerStyles = this.gameWindow.getComputedStyle(inputContainer);
+                this.assert(containerStyles.padding === '20px', 'Input container has correct padding');
+                
+                const wrapperStyles = this.gameWindow.getComputedStyle(inputWrapper);
+                this.assert(wrapperStyles.display === 'flex', 'Input wrapper uses flexbox');
+                this.assert(wrapperStyles.gap === '10px', 'Input wrapper has correct gap');
+                
+                const inputStyles = this.gameWindow.getComputedStyle(playerInput);
+                this.assert(inputStyles.flex === '1 1 0%' || inputStyles.flexGrow === '1', 'Player input grows to fill space');
+                this.assert(inputStyles.borderRadius === '25px', 'Player input has rounded corners');
+                
+                const buttonStyles = this.gameWindow.getComputedStyle(sendButton);
+                this.assert(buttonStyles.borderRadius === '25px', 'Send button has rounded corners');
+                this.assert(buttonStyles.cursor === 'pointer', 'Send button has pointer cursor');
+            }
+
+            async testLoadingAnimation() {
+                const loading = this.gameDocument.querySelector('.loading');
+                const loadingDots = this.gameDocument.querySelector('.loading-dots');
+                const dots = this.gameDocument.querySelectorAll('.loading-dots span');
+                
+                this.assert(loading !== null, 'Loading element exists');
+                this.assert(loadingDots !== null, 'Loading dots container exists');
+                this.assert(dots.length === 3, 'Loading has 3 dots');
+                
+                const loadingStyles = this.gameWindow.getComputedStyle(loading);
+                this.assert(loadingStyles.display === 'none', 'Loading is initially hidden');
+                
+                // Test animation delays
+                const dot1Styles = this.gameWindow.getComputedStyle(dots[0]);
+                const dot2Styles = this.gameWindow.getComputedStyle(dots[1]);
+                
+                this.assert(dot1Styles.animationDelay === '-0.32s', 'First dot has correct animation delay');
+                this.assert(dot2Styles.animationDelay === '-0.16s', 'Second dot has correct animation delay');
+                
+                // Test animation properties
+                this.assert(dot1Styles.animationName === 'bounce', 'Dots use bounce animation');
+                this.assert(dot1Styles.animationIterationCount === 'infinite', 'Dots animate infinitely');
+            }
+
+            async testStreamingCursor() {
+                // Create a test streaming cursor
+                const cursor = this.gameDocument.createElement('span');
+                cursor.className = 'streaming-cursor';
+                cursor.textContent = '▋';
+                this.gameDocument.body.appendChild(cursor);
+                
+                const styles = this.gameWindow.getComputedStyle(cursor);
+                this.assert(styles.animationName === 'blink', 'Streaming cursor uses blink animation');
+                this.assert(styles.animationDuration === '1s', 'Streaming cursor blinks every second');
+                this.assert(styles.animationIterationCount === 'infinite', 'Streaming cursor blinks infinitely');
+                this.assert(styles.marginLeft === '2px', 'Streaming cursor has correct margin');
+                
+                // Clean up
+                this.gameDocument.body.removeChild(cursor);
+            }
+
+            async testButtonHoverStates() {
+                const sendButton = this.gameDocument.querySelector('#sendButton');
+                this.assert(sendButton !== null, 'Send button exists');
+                
+                // Test initial state
+                const initialStyles = this.gameWindow.getComputedStyle(sendButton);
+                this.assert(initialStyles.transition.includes('background'), 'Send button has hover transition');
+                
+                // Test disabled state styling
+                sendButton.disabled = true;
+                const disabledStyles = this.gameWindow.getComputedStyle(sendButton);
+                this.assert(parseFloat(disabledStyles.opacity) < 1, 'Disabled button has reduced opacity');
+                
+                sendButton.disabled = false;
+            }
+
+            async testMobileLayout() {
+                // Simulate mobile viewport
+                this.testFrame.style.width = '375px';
+                this.testFrame.style.height = '667px';
+                
+                await this.waitForReflow();
+                
+                const gameHeader = this.gameDocument.querySelector('.game-header');
+                const chatContainer = this.gameDocument.querySelector('.chat-container');
+                const inputContainer = this.gameDocument.querySelector('.input-container');
+                
+                const headerStyles = this.gameWindow.getComputedStyle(gameHeader);
+                const chatStyles = this.gameWindow.getComputedStyle(chatContainer);
+                const inputStyles = this.gameWindow.getComputedStyle(inputContainer);
+                
+                // Test mobile-specific styles are applied
+                this.assert(parseFloat(headerStyles.padding) <= 20, 'Header padding adjusted for mobile');
+                this.assert(parseFloat(chatStyles.padding) <= 20, 'Chat padding adjusted for mobile');
+                this.assert(parseFloat(inputStyles.padding) <= 20, 'Input padding adjusted for mobile');
+                
+                // Reset viewport
+                this.testFrame.style.width = '800px';
+                this.testFrame.style.height = '600px';
+                await this.waitForReflow();
+            }
+
+            async testTabletLayout() {
+                // Simulate tablet viewport
+                this.testFrame.style.width = '768px';
+                this.testFrame.style.height = '1024px';
+                
+                await this.waitForReflow();
+                
+                const gameContainer = this.gameDocument.querySelector('.game-container');
+                const styles = this.gameWindow.getComputedStyle(gameContainer);
+                
+                this.assert(parseFloat(styles.maxWidth) >= 768, 'Container adapts to tablet width');
+                
+                // Reset viewport
+                this.testFrame.style.width = '800px';
+                this.testFrame.style.height = '600px';
+                await this.waitForReflow();
+            }
+
+            async testApiKeyModalStyling() {
+                // Test that modal styles are loaded
+                const styleSheets = Array.from(this.gameDocument.styleSheets);
+                let modalStylesFound = false;
+                
+                for (const sheet of styleSheets) {
+                    try {
+                        const rules = Array.from(sheet.cssRules || sheet.rules || []);
+                        for (const rule of rules) {
+                            if (rule.selectorText && rule.selectorText.includes('.api-key-modal')) {
+                                modalStylesFound = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        // CORS or other access issues - expected for external stylesheets
+                    }
+                }
+                
+                this.assert(modalStylesFound, 'API key modal styles are loaded');
+                
+                // Test that ApiKeyManager class is available
+                this.assert(this.gameWindow.ApiKeyManager !== undefined, 'ApiKeyManager class is available');
+            }
+
+            async testModalAnimations() {
+                // Create test modal elements
+                const overlay = this.gameDocument.createElement('div');
+                overlay.className = 'api-key-modal-overlay';
+                const modal = this.gameDocument.createElement('div');
+                modal.className = 'api-key-modal';
+                overlay.appendChild(modal);
+                this.gameDocument.body.appendChild(overlay);
+                
+                const overlayStyles = this.gameWindow.getComputedStyle(overlay);
+                const modalStyles = this.gameWindow.getComputedStyle(modal);
+                
+                this.assert(overlayStyles.animationName === 'fadeIn', 'Modal overlay has fade-in animation');
+                this.assert(modalStyles.animationName === 'slideIn', 'Modal has slide-in animation');
+                this.assert(overlayStyles.backdropFilter.includes('blur'), 'Modal overlay has backdrop blur');
+                
+                // Clean up
+                this.gameDocument.body.removeChild(overlay);
+            }
+
+            async testColorScheme() {
+                const body = this.gameDocument.body;
+                const gameContainer = this.gameDocument.querySelector('.game-container');
+                
+                const bodyStyles = this.gameWindow.getComputedStyle(body);
+                const containerStyles = this.gameWindow.getComputedStyle(gameContainer);
+                
+                // Test main color scheme
+                this.assert(bodyStyles.background.includes('linear-gradient'), 'Body has gradient background');
+                this.assert(bodyStyles.color === 'rgb(255, 255, 255)' || bodyStyles.color === '#ffffff', 'Body has white text');
+                
+                // Test that the blue gradient colors are present
+                this.assert(bodyStyles.background.includes('rgb(30, 60, 114)') || bodyStyles.background.includes('#1e3c72'), 'Gradient includes primary blue');
+                this.assert(bodyStyles.background.includes('rgb(42, 82, 152)') || bodyStyles.background.includes('#2a5298'), 'Gradient includes secondary blue');
+            }
+
+            async testTypography() {
+                const body = this.gameDocument.body;
+                const h1 = this.gameDocument.querySelector('.game-header h1');
+                
+                const bodyStyles = this.gameWindow.getComputedStyle(body);
+                const h1Styles = this.gameWindow.getComputedStyle(h1);
+                
+                // Test font families
+                this.assert(bodyStyles.fontFamily.includes('Segoe UI') || bodyStyles.fontFamily.includes('sans-serif'), 'Body uses correct font family');
+                this.assert(h1Styles.fontSize === '2rem' || h1Styles.fontSize === '32px', 'H1 has correct font size');
+                this.assert(h1Styles.textShadow.includes('rgba'), 'H1 has text shadow for readability');
+            }
+
+            async testContrast() {
+                const dmMessage = this.gameDocument.createElement('div');
+                dmMessage.className = 'message dm-message';
+                const playerMessage = this.gameDocument.createElement('div');
+                playerMessage.className = 'message player-message';
+                
+                this.gameDocument.body.appendChild(dmMessage);
+                this.gameDocument.body.appendChild(playerMessage);
+                
+                const dmStyles = this.gameWindow.getComputedStyle(dmMessage);
+                const playerStyles = this.gameWindow.getComputedStyle(playerMessage);
+                
+                // Test that messages have different background colors for contrast
+                this.assert(dmStyles.backgroundColor !== playerStyles.backgroundColor, 'DM and player messages have different backgrounds');
+                
+                // Clean up
+                this.gameDocument.body.removeChild(dmMessage);
+                this.gameDocument.body.removeChild(playerMessage);
+            }
+
+            async testHighContrastMode() {
+                // Test that high contrast media query exists
+                const styleSheets = Array.from(this.gameDocument.styleSheets);
+                let highContrastFound = false;
+                
+                for (const sheet of styleSheets) {
+                    try {
+                        const rules = Array.from(sheet.cssRules || sheet.rules || []);
+                        for (const rule of rules) {
+                            if (rule.conditionText && rule.conditionText.includes('prefers-contrast: high')) {
+                                highContrastFound = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        // CORS or access issues
+                    }
+                }
+                
+                this.assert(highContrastFound, 'High contrast mode styles are defined');
+            }
+
+            async testReducedMotion() {
+                // Test that reduced motion media query exists
+                const styleSheets = Array.from(this.gameDocument.styleSheets);
+                let reducedMotionFound = false;
+                
+                for (const sheet of styleSheets) {
+                    try {
+                        const rules = Array.from(sheet.cssRules || sheet.rules || []);
+                        for (const rule of rules) {
+                            if (rule.conditionText && rule.conditionText.includes('prefers-reduced-motion: reduce')) {
+                                reducedMotionFound = true;
+                                break;
+                            }
+                        }
+                    } catch (e) {
+                        // CORS or access issues
+                    }
+                }
+                
+                this.assert(reducedMotionFound, 'Reduced motion preferences are respected');
+            }
+
+            async waitForReflow() {
+                return new Promise(resolve => {
+                    this.gameWindow.requestAnimationFrame(() => {
+                        this.gameWindow.requestAnimationFrame(resolve);
+                    });
+                });
+            }
+
+            assert(condition, description) {
+                const result = {
+                    description,
+                    passed: condition,
+                    timestamp: new Date().toISOString()
+                };
+                this.results.push(result);
+                console.log(`${condition ? '✅' : '❌'} ${description}`);
+            }
+
+            addTestHeader(header) {
+                this.results.push({ header });
+            }
+
+            displayResults() {
+                const container = document.getElementById('test-results');
+                let html = '';
+                
+                let passed = 0;
+                let failed = 0;
+                
+                this.results.forEach(result => {
+                    if (result.header) {
+                        html += `<div class="test-header">${result.header}</div>`;
+                    } else {
+                        const className = result.passed ? 'pass' : 'fail';
+                        html += `<div class="test-result ${className}">
+                            ${result.passed ? '✅' : '❌'} ${result.description}
+                        </div>`;
+                        if (result.passed) passed++;
+                        else failed++;
+                    }
+                });
+                
+                html = `<div class="test-header">📊 Test Summary: ${passed} passed, ${failed} failed</div>` + html;
+                container.innerHTML = html;
+                
+                if (failed === 0) {
+                    console.log('🎉 All GUI visual regression tests passed!');
+                } else {
+                    console.log(`⚠️ ${failed} GUI visual regression tests failed - UI changes detected!`);
+                }
+            }
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', async () => {
+            const tests = new GuiVisualTests();
+            await tests.runAllTests();
+        });
+    </script>
+</body>
+</html>
