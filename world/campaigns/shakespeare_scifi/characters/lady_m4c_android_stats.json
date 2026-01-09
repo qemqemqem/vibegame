@@ -1,0 +1,19 @@
+{
+  "level": 10,
+  "hit_points": 120,
+  "armor_class": 16,
+  "attributes": {
+    "strength": 14,
+    "dexterity": 16,
+    "constitution": 18,
+    "intelligence": 19,
+    "wisdom": 12,
+    "charisma": 20
+  },
+  "skills": {
+    "persuasion": 22,
+    "deception": 20,
+    "politics": 18,
+    "network_hacking": 15
+  }
+}

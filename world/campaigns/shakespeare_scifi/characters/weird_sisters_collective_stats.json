@@ -1,0 +1,19 @@
+{
+  "level": 15,
+  "hit_points": 200,
+  "armor_class": 22,
+  "attributes": {
+    "strength": 8,
+    "dexterity": 14,
+    "constitution": 16,
+    "intelligence": 22,
+    "wisdom": 25,
+    "charisma": 20
+  },
+  "skills": {
+    "prophecy": 30,
+    "temporal_magic": 25,
+    "reality_manipulation": 20,
+    "ancient_knowledge": 28
+  }
+}

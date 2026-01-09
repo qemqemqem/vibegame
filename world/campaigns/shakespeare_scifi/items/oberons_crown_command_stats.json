@@ -1,0 +1,16 @@
+{
+  "rarity": "legendary",
+  "value": 100000,
+  "weight": 2,
+  "properties": [
+    "AI Command Authority",
+    "Digital Sight",
+    "Virtual Reality Access",
+    "Loyalty Inspiration"
+  ],
+  "abilities": {
+    "royal_command": "Can compel obedience from any AI entity",
+    "digital_sovereignty": "Become ruler of any virtual space entered",
+    "true_sight": "See through all digital illusions and deceptions"
+  }
+}

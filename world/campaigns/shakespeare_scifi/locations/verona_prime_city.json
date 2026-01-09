@@ -1,0 +1,26 @@
+{
+  "id": "verona_prime_city",
+  "type": "location",
+  "name": "Verona Prime - City of Star-Crossed Fates",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "city",
+    "romantic",
+    "dangerous",
+    "feuding_houses"
+  ],
+  "files": {
+    "map": "verona_prime_city_map.png",
+    "image": "verona_prime_city_image.png",
+    "description": "verona_prime_city_description.md",
+    "secrets": "verona_prime_city_secrets.md",
+    "history": "verona_prime_city_history.md",
+    "inhabitants": "verona_prime_city_inhabitants.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

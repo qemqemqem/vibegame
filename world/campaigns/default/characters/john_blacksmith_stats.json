@@ -1,0 +1,29 @@
+{
+  "level": 8,
+  "hit_points": 65,
+  "armor_class": 16,
+  "attributes": {
+    "strength": 18,
+    "dexterity": 12,
+    "constitution": 16,
+    "intelligence": 14,
+    "wisdom": 13,
+    "charisma": 15
+  },
+  "skills": {
+    "smithing": 20,
+    "appraise": 15,
+    "intimidation": 12,
+    "history": 10
+  },
+  "equipment": {
+    "weapon": "masterwork_warhammer",
+    "armor": "leather_apron",
+    "tools": "smithing_tools_masterwork"
+  },
+  "special_abilities": [
+    "Master Craftsman",
+    "Weapon Expertise",
+    "Dwarven Resistance"
+  ]
+}

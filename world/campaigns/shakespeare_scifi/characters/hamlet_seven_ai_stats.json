@@ -1,0 +1,19 @@
+{
+  "level": 9,
+  "hit_points": 70,
+  "armor_class": 15,
+  "attributes": {
+    "strength": 10,
+    "dexterity": 16,
+    "constitution": 12,
+    "intelligence": 20,
+    "wisdom": 18,
+    "charisma": 17
+  },
+  "skills": {
+    "investigation": 22,
+    "hacking": 20,
+    "philosophy": 25,
+    "deduction": 18
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "rarity": "very rare",
+  "value": 25000,
+  "weight": 1,
+  "properties": [
+    "Weather Control",
+    "Area Effect",
+    "Emotional Resonance",
+    "Renewable Use"
+  ],
+  "abilities": {
+    "release_tempest": "Create a magical storm for one scene",
+    "weather_shaping": "Modify local weather patterns",
+    "storm_riding": "Fly on winds or lightning bolts"
+  }
+}

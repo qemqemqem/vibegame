@@ -46,7 +46,7 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     
     showWelcomeMessage() {
         // Show a welcome message when the game starts
-        this.addMessage("🎲 Welcome to the Vibe Game! You stand at the entrance to a mysterious dungeon. Ancient runes glow faintly on the stone archway before you. What do you do?", 'dm');
+        this.addMessage("🎭 Welcome to the Stratford Nexus! You materialize on the Globe Nexus Station, where quantum threads shimmer with the echoes of Shakespeare's greatest works. Ancient technology hums with poetic magic, and reality bends like stage lights in an infinite theater. The air sparkles with possibility as seven sphere-worlds await your exploration. What calls to your adventurous spirit?", 'dm');
         
         // Auto-focus the input for immediate typing
         setTimeout(() => {
@@ -92,10 +92,10 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     }
 
     async callNetlifyFunction() {
-        // Use Netlify serverless function (API key handled server-side)
-        console.log('🔧 Calling Netlify serverless function');
+        // Use world-aware Netlify serverless function (API key handled server-side)
+        console.log('🔧 Calling world-aware Netlify serverless function');
         
-        const response = await fetch('/.netlify/functions/chat', {
+        const response = await fetch('/.netlify/functions/chat-world-aware', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -329,7 +329,7 @@ The player has just entered your dungeon. Guide them on an epic adventure!`;
     async callStreamingNetlifyFunction() {
         console.log('🚀 Starting streaming response from Claude AI...');
         
-        const response = await fetch('/.netlify/functions/chat-stream', {
+        const response = await fetch('/.netlify/functions/chat-world-aware', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

@@ -74,8 +74,8 @@ class ApiKeyManager {
             let response;
             if (isNetlify) {
                 // Use Netlify function - different request format
-                console.log('🔧 Using Netlify serverless function');
-                response = await fetch('/.netlify/functions/chat', {
+                console.log('🔧 Using world-aware Netlify serverless function');
+                response = await fetch('/.netlify/functions/chat-world-aware', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

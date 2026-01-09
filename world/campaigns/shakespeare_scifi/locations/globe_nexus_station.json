@@ -1,0 +1,26 @@
+{
+  "id": "globe_nexus_station",
+  "type": "location",
+  "name": "The Globe Nexus Station",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "space_station",
+    "hub",
+    "theater",
+    "mysterious"
+  ],
+  "files": {
+    "map": "globe_nexus_station_map.png",
+    "image": "globe_nexus_station_image.png",
+    "description": "globe_nexus_station_description.md",
+    "secrets": "globe_nexus_station_secrets.md",
+    "history": "globe_nexus_station_history.md",
+    "inhabitants": "globe_nexus_station_inhabitants.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

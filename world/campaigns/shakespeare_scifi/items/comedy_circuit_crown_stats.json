@@ -1,0 +1,16 @@
+{
+  "rarity": "legendary",
+  "value": 75000,
+  "weight": 1,
+  "properties": [
+    "Comedy Field Generation",
+    "Probability Manipulation",
+    "Mood Enhancement",
+    "Lucky Coincidences"
+  ],
+  "abilities": {
+    "happy_ending": "Once per day, can force a reroll of any tragic outcome",
+    "comic_relief": "Can defuse tense situations with perfectly timed humor",
+    "fortune_favors": "Gain advantage on luck-based checks"
+  }
+}

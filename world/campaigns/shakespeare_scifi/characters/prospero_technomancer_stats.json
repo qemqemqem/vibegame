@@ -1,0 +1,19 @@
+{
+  "level": 12,
+  "hit_points": 85,
+  "armor_class": 18,
+  "attributes": {
+    "strength": 10,
+    "dexterity": 14,
+    "constitution": 15,
+    "intelligence": 20,
+    "wisdom": 18,
+    "charisma": 19
+  },
+  "skills": {
+    "technomancy": 25,
+    "weather_control": 20,
+    "ancient_lore": 22,
+    "dimensional_magic": 18
+  }
+}

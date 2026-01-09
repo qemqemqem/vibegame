@@ -1,0 +1,26 @@
+{
+  "id": "elsinore_data_fortress",
+  "type": "location",
+  "name": "Elsinore Data Fortress",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "fortress",
+    "gothic",
+    "haunted",
+    "political"
+  ],
+  "files": {
+    "map": "elsinore_data_fortress_map.png",
+    "image": "elsinore_data_fortress_image.png",
+    "description": "elsinore_data_fortress_description.md",
+    "secrets": "elsinore_data_fortress_secrets.md",
+    "history": "elsinore_data_fortress_history.md",
+    "inhabitants": "elsinore_data_fortress_inhabitants.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

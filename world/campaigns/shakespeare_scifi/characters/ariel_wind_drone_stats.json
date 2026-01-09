@@ -1,0 +1,19 @@
+{
+  "level": 7,
+  "hit_points": 45,
+  "armor_class": 18,
+  "attributes": {
+    "strength": 6,
+    "dexterity": 20,
+    "constitution": 10,
+    "intelligence": 16,
+    "wisdom": 14,
+    "charisma": 18
+  },
+  "skills": {
+    "stealth": 25,
+    "weather_control": 18,
+    "acrobatics": 20,
+    "information_gathering": 16
+  }
+}

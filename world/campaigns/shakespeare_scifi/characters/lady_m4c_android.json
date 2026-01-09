@@ -1,0 +1,27 @@
+{
+  "id": "lady_m4c_android",
+  "type": "character",
+  "name": "Lady M-4C 'The Ambitious'",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "android",
+    "noble",
+    "dangerous",
+    "politician"
+  ],
+  "files": {
+    "portrait": "lady_m4c_android_portrait.png",
+    "public_bio": "lady_m4c_android_bio.md",
+    "secrets": "lady_m4c_android_secrets.md",
+    "stats": "lady_m4c_android_stats.json",
+    "dialogue": "lady_m4c_android_dialogue.md",
+    "relationships": "lady_m4c_android_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

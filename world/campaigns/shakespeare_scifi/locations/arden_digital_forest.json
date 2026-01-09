@@ -1,0 +1,26 @@
+{
+  "id": "arden_digital_forest",
+  "type": "location",
+  "name": "The Arden Digital Forest",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "forest",
+    "magical",
+    "transformative",
+    "dangerous"
+  ],
+  "files": {
+    "map": "arden_digital_forest_map.png",
+    "image": "arden_digital_forest_image.png",
+    "description": "arden_digital_forest_description.md",
+    "secrets": "arden_digital_forest_secrets.md",
+    "history": "arden_digital_forest_history.md",
+    "inhabitants": "arden_digital_forest_inhabitants.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

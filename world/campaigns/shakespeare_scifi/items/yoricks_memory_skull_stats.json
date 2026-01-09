@@ -1,0 +1,16 @@
+{
+  "rarity": "legendary",
+  "value": 50000,
+  "weight": 3,
+  "properties": [
+    "Historical Knowledge",
+    "Social Enhancement",
+    "Morale Boost",
+    "Truth Detection"
+  ],
+  "abilities": {
+    "remembered_wisdom": "Once per day, gain advantage on any Intelligence or Wisdom check",
+    "jestering": "Can cast a humor-based charm effect",
+    "memento_mori": "Provides insight into mortality and the meaning of life"
+  }
+}

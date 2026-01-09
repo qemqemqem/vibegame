@@ -1,0 +1,20 @@
+{
+  "id": "john_blacksmith",
+  "type": "character",
+  "name": "John the Blacksmith",
+  "campaign": "default",
+  "tags": ["npc", "craftsman", "friendly", "vendor"],
+  "files": {
+    "public_bio": "john_blacksmith_bio.md",
+    "secrets": "john_blacksmith_secrets.md",
+    "stats": "john_blacksmith_stats.json",
+    "dialogue": "john_blacksmith_dialogue.md",
+    "relationships": "john_blacksmith_relationships.json"
+  },
+  "metadata": {
+    "created": "2024-01-15",
+    "last_modified": "2024-01-15",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

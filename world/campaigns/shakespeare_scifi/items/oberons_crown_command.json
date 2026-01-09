@@ -1,0 +1,24 @@
+{
+  "id": "oberons_crown_command",
+  "type": "item",
+  "name": "Oberon's Crown of Command",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "crown",
+    "command",
+    "royal",
+    "magical"
+  ],
+  "files": {
+    "image": "oberons_crown_command_image.png",
+    "description": "oberons_crown_command_description.md",
+    "stats": "oberons_crown_command_stats.json",
+    "history": "oberons_crown_command_history.md"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

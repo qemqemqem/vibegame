@@ -1,0 +1,27 @@
+{
+  "id": "puck_probability_sprite",
+  "type": "character",
+  "name": "Puck the Probability Sprite",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "trickster",
+    "magical",
+    "chaos",
+    "helpful"
+  ],
+  "files": {
+    "portrait": "puck_probability_sprite_portrait.png",
+    "public_bio": "puck_probability_sprite_bio.md",
+    "secrets": "puck_probability_sprite_secrets.md",
+    "stats": "puck_probability_sprite_stats.json",
+    "dialogue": "puck_probability_sprite_dialogue.md",
+    "relationships": "puck_probability_sprite_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

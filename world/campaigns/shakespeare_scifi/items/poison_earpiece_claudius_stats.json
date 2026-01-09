@@ -1,0 +1,17 @@
+{
+  "rarity": "legendary",
+  "value": 75000,
+  "weight": 0.1,
+  "properties": [
+    "Assassination Tool",
+    "Communication Device",
+    "Corruption Effect",
+    "Undetectable Weapon"
+  ],
+  "abilities": {
+    "digital_poison": "Instantly kill any AI with a virus injection",
+    "bio_toxin": "Deliver exotic poisons to organic beings",
+    "perfect_murder": "Mask assassination as natural death",
+    "paranoia_induction": "Gradually corrupt the wearer's judgment"
+  }
+}

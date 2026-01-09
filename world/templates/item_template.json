@@ -1,0 +1,19 @@
+{
+  "id": "example_item",
+  "type": "item",
+  "name": "Example Item Name",
+  "campaign": "default",
+  "tags": ["weapon", "magical", "example_tag"],
+  "files": {
+    "image": "example_item_image.png",
+    "description": "example_item_description.md",
+    "stats": "example_item_stats.json",
+    "history": "example_item_history.md"
+  },
+  "metadata": {
+    "created": "2024-01-01",
+    "last_modified": "2024-01-01",
+    "status": "active",
+    "ai_priority": "medium"
+  }
+}

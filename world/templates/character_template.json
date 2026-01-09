@@ -1,0 +1,21 @@
+{
+  "id": "example_character",
+  "type": "character",
+  "name": "Example Character Name",
+  "campaign": "default",
+  "tags": ["npc", "example_tag"],
+  "files": {
+    "portrait": "example_character_portrait.png",
+    "public_bio": "example_character_bio.md",
+    "secrets": "example_character_secrets.md",
+    "stats": "example_character_stats.json",
+    "dialogue": "example_character_dialogue.md",
+    "relationships": "example_character_relationships.json"
+  },
+  "metadata": {
+    "created": "2024-01-01",
+    "last_modified": "2024-01-01",
+    "status": "active",
+    "ai_priority": "medium"
+  }
+}

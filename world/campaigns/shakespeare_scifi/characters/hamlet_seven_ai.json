@@ -1,0 +1,27 @@
+{
+  "id": "hamlet_seven_ai",
+  "type": "character",
+  "name": "Hamlet-VII 'The Brooding Prince'",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "ai",
+    "prince",
+    "melancholy",
+    "philosopher"
+  ],
+  "files": {
+    "portrait": "hamlet_seven_ai_portrait.png",
+    "public_bio": "hamlet_seven_ai_bio.md",
+    "secrets": "hamlet_seven_ai_secrets.md",
+    "stats": "hamlet_seven_ai_stats.json",
+    "dialogue": "hamlet_seven_ai_dialogue.md",
+    "relationships": "hamlet_seven_ai_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "characters": [
+    "romeo_alpha",
+    "juliet_beta",
+    "nurse_unit_7"
+  ],
+  "creatures": [
+    "passion_wraiths",
+    "honor_bound_guardians"
+  ],
+  "factions": [
+    "House Montague",
+    "House Capulet",
+    "The Peacekeepers"
+  ]
+}

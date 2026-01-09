@@ -1,0 +1,27 @@
+{
+  "id": "ariel_wind_drone",
+  "type": "character",
+  "name": "Ariel the Wind Spirit Drone",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "drone",
+    "spirit",
+    "servant",
+    "magical"
+  ],
+  "files": {
+    "portrait": "ariel_wind_drone_portrait.png",
+    "public_bio": "ariel_wind_drone_bio.md",
+    "secrets": "ariel_wind_drone_secrets.md",
+    "stats": "ariel_wind_drone_stats.json",
+    "dialogue": "ariel_wind_drone_dialogue.md",
+    "relationships": "ariel_wind_drone_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "medium"
+  }
+}

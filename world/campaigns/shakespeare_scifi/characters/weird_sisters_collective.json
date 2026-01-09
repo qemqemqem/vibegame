@@ -1,0 +1,27 @@
+{
+  "id": "weird_sisters_collective",
+  "type": "character",
+  "name": "The Weird Sisters - Quantum Fortune Teller Collective",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "collective_ai",
+    "prophecy",
+    "mysterious",
+    "dangerous"
+  ],
+  "files": {
+    "portrait": "weird_sisters_collective_portrait.png",
+    "public_bio": "weird_sisters_collective_bio.md",
+    "secrets": "weird_sisters_collective_secrets.md",
+    "stats": "weird_sisters_collective_stats.json",
+    "dialogue": "weird_sisters_collective_dialogue.md",
+    "relationships": "weird_sisters_collective_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "comedy_circuit_crown",
+  "type": "item",
+  "name": "The Comedy Circuit Crown",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "crown",
+    "comedy",
+    "tech",
+    "powerful"
+  ],
+  "files": {
+    "image": "comedy_circuit_crown_image.png",
+    "description": "comedy_circuit_crown_description.md",
+    "stats": "comedy_circuit_crown_stats.json",
+    "history": "comedy_circuit_crown_history.md"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

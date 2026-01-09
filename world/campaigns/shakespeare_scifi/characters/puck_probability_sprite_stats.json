@@ -1,0 +1,19 @@
+{
+  "level": 8,
+  "hit_points": 60,
+  "armor_class": 20,
+  "attributes": {
+    "strength": 8,
+    "dexterity": 22,
+    "constitution": 12,
+    "intelligence": 16,
+    "wisdom": 14,
+    "charisma": 18
+  },
+  "skills": {
+    "probability_magic": 20,
+    "stealth": 18,
+    "acrobatics": 16,
+    "tech_debugging": 15
+  }
+}

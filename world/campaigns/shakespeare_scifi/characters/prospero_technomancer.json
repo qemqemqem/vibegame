@@ -1,0 +1,26 @@
+{
+  "id": "prospero_technomancer",
+  "type": "character",
+  "name": "Prospero the Technomancer",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "npc",
+    "wizard",
+    "mentor",
+    "mysterious"
+  ],
+  "files": {
+    "portrait": "prospero_technomancer_portrait.png",
+    "public_bio": "prospero_technomancer_bio.md",
+    "secrets": "prospero_technomancer_secrets.md",
+    "stats": "prospero_technomancer_stats.json",
+    "dialogue": "prospero_technomancer_dialogue.md",
+    "relationships": "prospero_technomancer_relationships.json"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}

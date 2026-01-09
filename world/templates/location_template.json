@@ -1,0 +1,20 @@
+{
+  "id": "example_location",
+  "type": "location",
+  "name": "Example Location Name",
+  "campaign": "default",
+  "tags": ["village", "safe", "example_tag"],
+  "files": {
+    "map": "example_location_map.png",
+    "description": "example_location_description.md",
+    "secrets": "example_location_secrets.md",
+    "history": "example_location_history.md",
+    "inhabitants": "example_location_inhabitants.json"
+  },
+  "metadata": {
+    "created": "2024-01-01",
+    "last_modified": "2024-01-01",
+    "status": "active",
+    "ai_priority": "medium"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "id": "poison_earpiece_claudius",
+  "type": "item",
+  "name": "The Poison Earpiece of Claudius",
+  "campaign": "shakespeare_scifi",
+  "tags": [
+    "earpiece",
+    "poison",
+    "assassination",
+    "evil"
+  ],
+  "files": {
+    "image": "poison_earpiece_claudius_image.png",
+    "description": "poison_earpiece_claudius_description.md",
+    "stats": "poison_earpiece_claudius_stats.json",
+    "history": "poison_earpiece_claudius_history.md"
+  },
+  "metadata": {
+    "created": "2025-07-12",
+    "last_modified": "2025-07-12",
+    "status": "active",
+    "ai_priority": "high"
+  }
+}
